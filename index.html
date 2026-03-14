@@ -480,6 +480,38 @@
   }
 
   /* ============================================
+     SECTION DIVIDER — CHARACTER FLY-IN
+     ============================================ */
+  @keyframes flyFromLeft {
+    from { opacity: 0; transform: translateX(-200px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes flyFromTop {
+    from { opacity: 0; transform: translateY(-200px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes flyFromRight {
+    from { opacity: 0; transform: translateX(200px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes flyFromBottom {
+    from { opacity: 0; transform: translateY(200px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title-char {
+    display: inline-block;
+    opacity: 0;
+    animation-duration: 0.6s;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation-fill-mode: forwards;
+  }
+  .section-title-char.fly-left   { animation-name: flyFromLeft; }
+  .section-title-char.fly-top    { animation-name: flyFromTop; }
+  .section-title-char.fly-right  { animation-name: flyFromRight; }
+  .section-title-char.fly-bottom { animation-name: flyFromBottom; }
+
+  /* ============================================
      RESPONSIVE
      ============================================ */
   @media (max-width: 900px) {
@@ -544,12 +576,46 @@ function SlideOutline({ step }) {
   );
 }
 
+// ─── Slide 3: Section Divider — Claude Code 簡介 ───
+function SlideSectionIntro({ step, isActive }) {
+  const title = 'Claude Code 簡介';
+  const directions = ['left', 'top', 'right', 'bottom'];
+  const [animateKey, setAnimateKey] = useState(0);
+
+  useEffect(() => {
+    if (isActive) setAnimateKey(k => k + 1);
+  }, [isActive]);
+
+  return (
+    <div className="slide title-slide">
+      <h1 key={animateKey} style={{ fontSize: '80px', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>
+        {isActive && title.split('').map((char, i) => (
+          <span
+            key={i}
+            className={`section-title-char fly-${directions[i % 4]}`}
+            style={{
+              animationDelay: `${i * 0.12}s`,
+              background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {char === ' ' ? '\u00A0' : char}
+          </span>
+        ))}
+      </h1>
+    </div>
+  );
+}
+
 /* ==================================================================
    SLIDES CONFIG
    ================================================================== */
 const SLIDES = [
   { component: SlideCover, totalSteps: 0, title: '封面' },
   { component: SlideOutline, totalSteps: 4, title: '大綱' },
+  { component: SlideSectionIntro, totalSteps: 0, title: 'Claude Code 簡介' },
 ];
 
 /* ==================================================================
@@ -633,7 +699,7 @@ function App() {
           const SlideComp = s.component;
           return (
             <div key={idx} className={getWrapperClass(idx)}>
-              <SlideComp step={idx === currentSlide ? currentStep : 0} />
+              <SlideComp step={idx === currentSlide ? currentStep : 0} isActive={idx === currentSlide} />
             </div>
           );
         })}
