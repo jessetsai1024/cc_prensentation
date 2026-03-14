@@ -514,11 +514,42 @@ function SlideCover({ step }) {
   );
 }
 
+// ─── Slide 2: 大綱 ───
+function SlideOutline({ step }) {
+  const items = [
+    { num: '01', title: 'Claude Code 簡介', color: 'var(--accent)' },
+    { num: '02', title: '基本設置', color: 'var(--accent2)' },
+    { num: '03', title: '高階功能', color: 'var(--accent3)' },
+    { num: '04', title: '實戰策略', color: 'var(--accent4)' },
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">大綱</h2>
+      <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className={`card step-fade ${step > i ? 'visible' : 'pending'}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '28px', borderLeft: `5px solid ${item.color}` }}
+          >
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '40px', fontWeight: 900, color: item.color }}>
+              {item.num}
+            </span>
+            <span style={{ fontSize: '36px', fontWeight: 700 }}>{item.title}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ==================================================================
    SLIDES CONFIG
    ================================================================== */
 const SLIDES = [
   { component: SlideCover, totalSteps: 0, title: '封面' },
+  { component: SlideOutline, totalSteps: 4, title: '大綱' },
 ];
 
 /* ==================================================================
