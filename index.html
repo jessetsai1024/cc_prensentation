@@ -572,6 +572,47 @@
   }
 
   /* ============================================
+     PRICING
+     ============================================ */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin: 24px 0;
+  }
+  .pricing-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .pricing-card .plan-name {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .pricing-card .plan-price {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .pricing-card .plan-features {
+    font-size: 26px;
+    color: var(--text-secondary);
+    text-align: left;
+    line-height: 1.8;
+  }
+  .pricing-highlight {
+    background: var(--accent-glow);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin: 16px 0;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+
+  /* ============================================
      RESPONSIVE
      ============================================ */
   @media (max-width: 900px) {
@@ -581,6 +622,7 @@
     .slide h2 { font-size: 36px; }
     .slide p, .slide li { font-size: 24px; }
     .timeline { margin-left: 20px; }
+    .pricing-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -715,6 +757,132 @@ function SlideHistory({ step }) {
   );
 }
 
+// ─── Slide 5: 收費機制 ───
+function SlidePricing({ step }) {
+  const plans = [
+    {
+      name: 'Pro',
+      price: '$20/月',
+      color: 'var(--accent)',
+      features: ['每 5hr 視窗有限額度', '可使用 Sonnet / Haiku', '適合輕度使用者'],
+    },
+    {
+      name: 'Max 5x',
+      price: '$100/月',
+      color: 'var(--accent3)',
+      features: ['額度為 Pro 的 5 倍', '可使用 Opus / Sonnet / Haiku', '適合中高強度開發'],
+    },
+    {
+      name: 'Max 20x',
+      price: '$200/月',
+      color: 'var(--accent2)',
+      features: ['額度為 Pro 的 20 倍', '可使用 Opus / Sonnet / Haiku', '適合全天候高強度工作'],
+    },
+  ];
+
+  const apiPricing = [
+    { model: 'Opus 4.6', input: '$5', output: '$25' },
+    { model: 'Sonnet 4.6', input: '$3', output: '$15' },
+    { model: 'Haiku 4.5', input: '$1', output: '$5' },
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">收費機制</h2>
+      <p className="subtitle animate-in delay-1">兩種計費模式：訂閱制 vs. API</p>
+
+      {/* Step 1: 訂閱制方案 */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '20px', marginBottom: '16px' }}>
+          <span className="highlight">訂閱制方案</span>
+        </h3>
+        <div className="pricing-grid">
+          {plans.map((plan, i) => (
+            <div
+              key={i}
+              className="pricing-card"
+              style={{ borderTop: `4px solid ${plan.color}` }}
+            >
+              <div className="plan-name" style={{ color: plan.color }}>{plan.name}</div>
+              <div className="plan-price">{plan.price}</div>
+              <div className="plan-features">
+                {plan.features.map((f, j) => (
+                  <div key={j}>• {f}</div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 2: 額度機制 */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">訂閱制額度機制</span>
+        </h3>
+        <div className="card card-accent">
+          <p>• <span className="highlight-yellow">5 小時滾動視窗</span>：短期用量限制，自動重置</p>
+          <p>• <span className="highlight-yellow">Weekly Limit</span>：每週總用量上限，防止持續高強度消耗</p>
+          <p>• 超量可加購或轉 API 計費</p>
+          <p>• Claude Code 與 Claude.ai <span className="highlight-pink">共用額度</span></p>
+          <p style={{ marginTop: '16px', fontSize: '26px' }}>
+            <span className="highlight-green">實際體感：</span>Pro 高強度工作約 <span className="highlight-yellow">1 小時</span>就耗盡 5hr 額度；Max $100 方案同樣條件下 5hr 額度約用 <span className="highlight-yellow">40%–60%</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Step 3: API 計費 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">API 計費</span>
+        </h3>
+        <table>
+          <thead>
+            <tr>
+              <th>模型</th>
+              <th>Input (per MTok)</th>
+              <th>Output (per MTok)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {apiPricing.map((row, i) => (
+              <tr key={i}>
+                <td style={{ fontWeight: 700 }}>{row.model}</td>
+                <td>{row.input}</td>
+                <td>{row.output}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p style={{ marginTop: '12px', fontSize: '26px', color: 'var(--text-secondary)' }}>
+          <span className="highlight-green">Batch API 5 折</span>・<span className="highlight-green">Prompt Caching 僅 10%</span>
+        </p>
+      </div>
+
+      {/* Step 4: 實際花費估算 */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">實際花費估算</span>
+        </h3>
+        <div className="pricing-highlight">
+          <p style={{ fontSize: '28px', marginBottom: '12px' }}>
+            <span className="highlight-yellow">Opus 4.6</span> 高強度工作 8 小時 ≈ <span className="highlight-pink" style={{ fontSize: '36px' }}>$30–60/天</span>
+          </p>
+          <p style={{ fontSize: '26px', color: 'var(--text-secondary)' }}>
+            視 codebase 大小與 cache 命中率而定
+          </p>
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <p style={{ fontSize: '26px' }}>
+              官方數據：平均 <span className="highlight-green">$6/天</span>、90% 用戶低於 <span className="highlight-green">$12/天</span>
+              <span style={{ color: 'var(--text-dim)', fontSize: '24px' }}>（多為 Sonnet）</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ==================================================================
    SLIDES CONFIG
    ================================================================== */
@@ -723,6 +891,7 @@ const SLIDES = [
   { component: SlideOutline, totalSteps: 4, title: '大綱' },
   { component: SlideSectionIntro, totalSteps: 0, title: 'Claude Code 簡介' },
   { component: SlideHistory, totalSteps: 11, title: '發展時間軸' },
+  { component: SlidePricing, totalSteps: 4, title: '收費機制' },
 ];
 
 /* ==================================================================
