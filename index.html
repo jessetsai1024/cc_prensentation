@@ -512,6 +512,66 @@
   .section-title-char.fly-bottom { animation-name: flyFromBottom; }
 
   /* ============================================
+     TIMELINE
+     ============================================ */
+  .timeline {
+    position: relative;
+    margin-left: 48px;
+    padding-left: 48px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent), var(--accent3), var(--accent2));
+    opacity: 0.5;
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative;
+    padding-bottom: 12px;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -48px;
+    top: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid var(--text-dim);
+    background: var(--bg-slide);
+    transition: all 0.5s ease;
+  }
+  .timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .timeline-header .timeline-emoji {
+    font-size: 26px;
+  }
+  .timeline-header .timeline-date {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    color: var(--text-dim);
+  }
+  .timeline-header .timeline-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .timeline-desc {
+    font-size: 24px;
+    color: var(--text-secondary);
+    padding-left: 40px;
+    line-height: 1.5;
+  }
+
+  /* ============================================
      RESPONSIVE
      ============================================ */
   @media (max-width: 900px) {
@@ -520,6 +580,7 @@
     .title-slide h1, .shimmer-title { font-size: 56px; }
     .slide h2 { font-size: 36px; }
     .slide p, .slide li { font-size: 24px; }
+    .timeline { margin-left: 20px; }
   }
 </style>
 </head>
@@ -609,6 +670,51 @@ function SlideSectionIntro({ step, isActive }) {
   );
 }
 
+// ─── Slide 4: 發展時間軸 ───
+function SlideHistory({ step }) {
+  const milestones = [
+    { date: '2025/02', emoji: '🔬', title: 'Research Preview 發布', desc: '終端 CLI 工具首次亮相：檔案編輯、Bash 執行、Git 工作流、程式碼庫上下文理解' },
+    { date: '2025/05', emoji: '🚀', title: '正式版 GA + Opus 4.5', desc: '200K context window、VS Code / JetBrains 插件、即時 inline diff、自動測試與 PR 建立' },
+    { date: '2025/06', emoji: '💳', title: '開放 Pro 訂閱使用', desc: '從 API-only 轉為訂閱制：Pro $20/月、Max $100-200/月，開發者免逐次付費即可使用' },
+    { date: '2025/09', emoji: '⭐', title: 'v2.0 — VS Code 原生整合', desc: '原生 VS Code 擴展（非插件）、側邊欄即時顯示程式碼變更、inline diff 完整整合' },
+    { date: '2025/09', emoji: '💾', title: 'v2.0 — 檢查點系統', desc: '每次 prompt 自動建立檢查點、保留 30 天、三種還原模式（對話/程式碼/全部）、Esc×2 或 /rewind' },
+    { date: '2025/09', emoji: '🤖', title: 'v2.0 — 自主編碼模式', desc: '背景執行長時間任務（最長 30+ 小時）、非阻塞式 dev server、/model 切換模型' },
+    { date: '2025/10', emoji: '🧩', title: '插件系統上線', desc: '自訂 slash commands、MCP server 整合、workflow hooks、Git repo 託管與市場機制' },
+    { date: '2025/10', emoji: '🌐', title: '網頁版推出', desc: '瀏覽器內直接使用、GitHub repo 連接、沙箱化環境、多工平行、/teleport 同步到本機 CLI' },
+    { date: '2026/01', emoji: '🔧', title: 'v2.1 — Worktree 隔離', desc: 'Git worktree 讓代理平行開發不衝突、背景代理 background:true、HTTP Hooks 串接 CI/CD' },
+    { date: '2026/01', emoji: '⌨️', title: 'v2.1 — UX 與效能', desc: 'Shift+Enter 多行輸入、語言設定、萬用字元權限控制、啟動記憶體減少 426KB、prompt re-render 降低 74%' },
+    { date: '2026/03', emoji: '📝', title: 'Code Review（研究預覽）', desc: '多代理平行審查 PR：邏輯錯誤偵測、安全漏洞掃描、迴歸分析、重複過濾與嚴重度排序' },
+  ];
+
+  const colors = ['var(--accent)', 'var(--accent3)', 'var(--accent4)', 'var(--accent2)'];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">Claude Code 發展時間軸</h2>
+      <p className="subtitle animate-in delay-1">從終端機工具到全方位開發平台</p>
+      <div className="timeline" style={{ marginTop: '24px' }}>
+        {milestones.map((m, i) => {
+          const color = colors[i % colors.length];
+          return (
+            <div key={i} className={`timeline-item step-fade ${step > i ? 'visible' : 'pending'}`}>
+              <div
+                className="timeline-dot"
+                style={step > i ? { borderColor: color, background: color } : {}}
+              />
+              <div className="timeline-header">
+                <span className="timeline-emoji">{m.emoji}</span>
+                <span className="timeline-date">{m.date}</span>
+                <span className="timeline-title">{m.title}</span>
+              </div>
+              <p className="timeline-desc">{m.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ==================================================================
    SLIDES CONFIG
    ================================================================== */
@@ -616,6 +722,7 @@ const SLIDES = [
   { component: SlideCover, totalSteps: 0, title: '封面' },
   { component: SlideOutline, totalSteps: 4, title: '大綱' },
   { component: SlideSectionIntro, totalSteps: 0, title: 'Claude Code 簡介' },
+  { component: SlideHistory, totalSteps: 11, title: '發展時間軸' },
 ];
 
 /* ==================================================================
