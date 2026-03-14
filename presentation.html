@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>課堂簡報模板</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================
+     CSS VARIABLES — 改這裡就能換整套配色
+     ============================================ */
+  :root {
+    --bg-primary: #0f172a;
+    --bg-slide: #1e293b;
+    --bg-card: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.25);
+    --accent2: #f472b6;
+    --accent3: #34d399;
+    --accent4: #fbbf24;
+    --danger: #f87171;
+    --font-body: 'Noto Sans TC', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius: 16px;
+    --transition-slide: 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* ============================================
+     RESET & BASE
+     ============================================ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body, #root {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 28px;
+    line-height: 1.6;
+  }
+
+  /* ============================================
+     SLIDE CONTAINER
+     ============================================ */
+  .slides-viewport {
+    position: relative;
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+
+  .slide-wrapper {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    transition: transform var(--transition-slide), opacity var(--transition-slide);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-dim) transparent;
+  }
+
+  .slide-wrapper::-webkit-scrollbar { width: 8px; }
+  .slide-wrapper::-webkit-scrollbar-thumb {
+    background: var(--text-dim); border-radius: 4px;
+  }
+
+  .slide-wrapper.current  { transform: translateX(0);    opacity: 1; z-index: 2; }
+  .slide-wrapper.prev     { transform: translateX(-100%); opacity: 0; z-index: 1; }
+  .slide-wrapper.next     { transform: translateX(100%);  opacity: 0; z-index: 1; }
+  .slide-wrapper.hidden   { transform: translateX(100%);  opacity: 0; z-index: 0; pointer-events: none; }
+
+  .slide {
+    min-height: 100vh;
+    padding: 60px 80px 120px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ============================================
+     TYPOGRAPHY — 現場簡報用，字要大
+     ============================================ */
+  .slide h1 {
+    font-size: 64px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .slide h2 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--accent);
+  }
+
+  .slide h3 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+
+  .slide p, .slide li {
+    font-size: 28px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+
+  .slide .subtitle {
+    font-size: 32px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+  }
+
+  .slide code, .slide .mono {
+    font-family: var(--font-mono);
+    background: var(--bg-card);
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.9em;
+  }
+
+  .highlight { color: var(--accent); font-weight: 700; }
+  .highlight-pink { color: var(--accent2); font-weight: 700; }
+  .highlight-green { color: var(--accent3); font-weight: 700; }
+  .highlight-yellow { color: var(--accent4); font-weight: 700; }
+
+  /* ============================================
+     CARDS & BOXES
+     ============================================ */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin: 16px 0;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .card-accent {
+    border-left: 5px solid var(--accent);
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+  }
+
+  /* ============================================
+     STEP ANIMATION ITEMS
+     ============================================ */
+  .step-item {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .step-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .step-item.hidden-step {
+    opacity: 0;
+    transform: translateY(30px);
+    pointer-events: none;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Fade-in variant (keeps space) */
+  .step-fade {
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .step-fade.visible { opacity: 1; transform: translateY(0); }
+  .step-fade.pending { opacity: 0; transform: translateY(20px); }
+
+  /* ============================================
+     BOTTOM NAV BAR
+     ============================================ */
+  .nav-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 1000;
+  }
+
+  .nav-btn {
+    min-width: 56px;
+    min-height: 56px;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* 換頁按鈕 — 用 accent2 (粉色) 區別 */
+  .nav-btn-page {
+    background: var(--accent2);
+    color: var(--bg-primary);
+  }
+  .nav-btn-page:hover {
+    background: #f9a8d4;
+    transform: scale(1.05);
+  }
+  .nav-btn-page:disabled {
+    background: var(--text-dim);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* 換步按鈕 — 用 accent (藍色) 區別 */
+  .nav-btn-step {
+    background: var(--accent);
+    color: var(--bg-primary);
+  }
+  .nav-btn-step:hover {
+    background: #7dd3fc;
+    transform: scale(1.05);
+  }
+  .nav-btn-step:disabled {
+    background: var(--text-dim);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .nav-btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--text-dim);
+  }
+  .nav-btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .nav-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-indicator {
+    font-size: 22px;
+    color: var(--text-dim);
+    font-weight: 500;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .step-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .step-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: all 0.3s ease;
+  }
+  .step-dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    transform: scale(1.3);
+  }
+  .step-dot.done {
+    background: var(--accent3);
+  }
+
+  /* ============================================
+     STEP NAV BUTTONS (inside slide)
+     ============================================ */
+  .step-nav {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .step-btn {
+    min-height: 56px;
+    padding: 12px 32px;
+    border: 3px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    border-radius: 14px;
+    font-family: var(--font-body);
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .step-btn:hover {
+    background: var(--accent);
+    color: var(--bg-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+  .step-btn:disabled {
+    border-color: var(--text-dim);
+    color: var(--text-dim);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* ============================================
+     INTERACTIVE CHART (BAR)
+     ============================================ */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 24px;
+    height: 320px;
+    padding: 20px 0;
+    margin: 20px 0;
+  }
+
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    max-width: 120px;
+  }
+
+  .bar {
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+    transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+
+  .bar-label {
+    font-size: 22px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .bar-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+
+  /* ============================================
+     INTERACTIVE CALCULATOR
+     ============================================ */
+  .calc-input {
+    width: 120px;
+    height: 56px;
+    text-align: center;
+    font-size: 28px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    background: var(--bg-primary);
+    border: 3px solid var(--accent);
+    border-radius: 12px;
+    color: var(--accent);
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .calc-input:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 20px rgba(244, 114, 182, 0.3);
+  }
+
+  .calc-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(52,211,153,0.15));
+    border: 2px solid var(--accent3);
+    border-radius: 14px;
+    font-family: var(--font-mono);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent3);
+    transition: all 0.3s ease;
+  }
+
+  /* ============================================
+     PROGRESS BAR (top)
+     ============================================ */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s ease;
+    z-index: 1001;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ============================================
+     FLOWCHART / DIAGRAM
+     ============================================ */
+  .flow-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 30px 0;
+  }
+
+  .flow-box {
+    padding: 20px 32px;
+    border-radius: 14px;
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 160px;
+  }
+
+  .flow-box.visible { opacity: 1; transform: scale(1); }
+  .flow-box.pending { opacity: 0; transform: scale(0.7); }
+
+  .flow-arrow {
+    font-size: 40px;
+    color: var(--text-dim);
+    transition: all 0.4s ease;
+    padding: 0 8px;
+  }
+  .flow-arrow.visible { opacity: 1; transform: translateX(0); }
+  .flow-arrow.pending { opacity: 0; transform: translateX(-20px); }
+
+  /* ============================================
+     TITLE SLIDE SPECIAL
+     ============================================ */
+  .title-slide {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .title-slide::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    animation: pulse-bg 4s ease-in-out infinite;
+  }
+
+  .title-slide > * { position: relative; z-index: 1; }
+
+  .title-slide h1 { font-size: 80px; margin-bottom: 16px; }
+  .title-slide .subtitle { font-size: 36px; }
+
+  @keyframes pulse-bg {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 0.7; transform: translate(-50%, -50%) scale(1.15); }
+  }
+
+  /* ============================================
+     END SLIDE
+     ============================================ */
+  .end-slide {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+  }
+
+  /* ============================================
+     KEYBOARD HINT
+     ============================================ */
+  .kbd-hint {
+    position: fixed;
+    top: 16px; right: 24px;
+    font-size: 18px;
+    color: var(--text-dim);
+    z-index: 999;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px; height: 32px;
+    padding: 0 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--text-dim);
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+
+  /* ============================================
+     TABLE
+     ============================================ */
+  .slide table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .slide th {
+    background: var(--accent);
+    color: var(--bg-primary);
+    padding: 16px 24px;
+    font-size: 26px;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .slide td {
+    padding: 14px 24px;
+    font-size: 26px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: var(--bg-card);
+  }
+
+  .slide tr:last-child td { border-bottom: none; }
+
+  /* ============================================
+     ANIMATIONS
+     ============================================ */
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-in { animation: slideInUp 0.6s ease forwards; }
+  .animate-fade { animation: fadeIn 0.5s ease forwards; }
+
+  .delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .delay-2 { animation-delay: 0.2s; opacity: 0; }
+  .delay-3 { animation-delay: 0.3s; opacity: 0; }
+  .delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+  /* ============================================
+     RESPONSIVE (smaller screens)
+     ============================================ */
+  @media (max-width: 900px) {
+    .slide { padding: 40px 32px 100px; }
+    .slide h1 { font-size: 48px; }
+    .title-slide h1 { font-size: 56px; }
+    .slide h2 { font-size: 36px; }
+    .slide p, .slide li { font-size: 24px; }
+    .bar-chart { height: 220px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+/* ==================================================================
+   SLIDE DEFINITIONS
+   每一頁是一個 object，包含 component 和 totalSteps
+   totalSteps = 0 表示這頁沒有分步動畫
+   ================================================================== */
+
+// ─── Slide 1: 封面 ───
+function SlideCover({ step }) {
+  return (
+    <div className="slide title-slide">
+      <h1 className="animate-in">簡報標題</h1>
+      <p className="subtitle animate-in delay-2">副標題 — 授課者姓名</p>
+      <p className="animate-in delay-3" style={{color: 'var(--text-dim)', fontSize: '24px', marginTop: '20px'}}>
+        2026 年 3 月
+      </p>
+    </div>
+  );
+}
+
+// ─── Slide 2: 文字分步出現 ───
+function SlideStepText({ step }) {
+  const items = [
+    { title: '第一個重點', desc: '這裡放第一個要講解的概念，文字可以寫得很詳細。分步動畫讓觀眾不會一次看到所有文字，專注於你正在講的部分。' },
+    { title: '第二個重點', desc: '第二段說明。你可以在這裡放公式、程式碼片段，或任何需要解釋的內容。' },
+    { title: '第三個重點', desc: '最後的結論或補充說明。每個步驟之間的過渡動畫讓觀眾知道「有新東西出現了」。' },
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">📝 分步文字展示</h2>
+      <p className="animate-in delay-1" style={{marginBottom: '24px'}}>
+        按 <code>下一步</code> 讓每個重點依序出現
+      </p>
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className={`card card-accent step-fade ${step > i ? 'visible' : 'pending'}`}
+          style={{ transitionDelay: `${0.05}s` }}
+        >
+          <h3><span className="highlight">{`0${i + 1}`}</span> {item.title}</h3>
+          <p>{item.desc}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Slide 3: 互動長條圖 ───
+function SlideBarChart({ step }) {
+  const data = [
+    { label: 'A 組', value: 72, color: 'var(--accent)' },
+    { label: 'B 組', value: 45, color: 'var(--accent2)' },
+    { label: 'C 組', value: 88, color: 'var(--accent3)' },
+    { label: 'D 組', value: 61, color: 'var(--accent4)' },
+    { label: 'E 組', value: 95, color: 'var(--danger)' },
+  ];
+  const maxVal = Math.max(...data.map(d => d.value));
+
+  // step 0: 只看到標題
+  // step 1: 長條動畫長出來
+  // step 2: 數值標籤出現
+  // step 3: 最高分高亮
+
+  const showBars = step >= 1;
+  const showValues = step >= 2;
+  const highlightMax = step >= 3;
+  const maxIdx = data.findIndex(d => d.value === Math.max(...data.map(x => x.value)));
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">📊 互動長條圖範例</h2>
+      <p className="animate-in delay-1">
+        {step === 0 && '按下一步，讓長條圖動畫展開 →'}
+        {step === 1 && '長條已展開！再按一次顯示數值 →'}
+        {step === 2 && '數值已顯示！再按一次高亮最高分 →'}
+        {step === 3 && <span>🏆 最高分是 <span className="highlight-green">E 組 (95)</span>！</span>}
+      </p>
+
+      <div className="card" style={{marginTop: '16px'}}>
+        <div className="bar-chart">
+          {data.map((d, i) => (
+            <div className="bar-col" key={i}>
+              <div
+                className="bar-value"
+                style={{
+                  opacity: showValues ? 1 : 0,
+                  color: highlightMax && i === maxIdx ? 'var(--accent3)' : d.color,
+                  transition: 'opacity 0.4s ease',
+                  transform: showValues ? 'translateY(0)' : 'translateY(10px)',
+                }}
+              >
+                {d.value}
+              </div>
+              <div
+                className="bar"
+                style={{
+                  height: showBars ? `${(d.value / maxVal) * 260}px` : '0px',
+                  background: highlightMax && i === maxIdx
+                    ? `linear-gradient(180deg, var(--accent3), rgba(52,211,153,0.5))`
+                    : d.color,
+                  boxShadow: highlightMax && i === maxIdx
+                    ? '0 0 30px rgba(52,211,153,0.5)'
+                    : 'none',
+                  transitionDelay: `${i * 0.1}s`,
+                }}
+              />
+              <div className="bar-label">{d.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Slide 4: 即時計算 ───
+function SlideLiveCalc({ step }) {
+  const [inputA, setInputA] = useState(5);
+  const [inputB, setInputB] = useState(3);
+
+  const result = inputA * inputB;
+  const formula = `${inputA} × ${inputB} = ${result}`;
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">🧮 即時計算範例</h2>
+      <p className="animate-in delay-1" style={{marginBottom: '16px'}}>
+        拖動數字或直接輸入，結果會即時更新
+      </p>
+
+      <div className={`card step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3>公式：A × B = ?</h3>
+        <div style={{display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', marginTop: '20px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'}}>
+            <label style={{fontSize: '22px', color: 'var(--text-dim)'}}>A</label>
+            <input
+              type="number"
+              className="calc-input"
+              value={inputA}
+              onChange={e => setInputA(Number(e.target.value) || 0)}
+            />
+            <input
+              type="range" min="0" max="20" value={inputA}
+              onChange={e => setInputA(Number(e.target.value))}
+              style={{width: '120px', accentColor: 'var(--accent)'}}
+            />
+          </div>
+
+          <span style={{fontSize: '40px', color: 'var(--text-dim)'}}>×</span>
+
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'}}>
+            <label style={{fontSize: '22px', color: 'var(--text-dim)'}}>B</label>
+            <input
+              type="number"
+              className="calc-input"
+              value={inputB}
+              onChange={e => setInputB(Number(e.target.value) || 0)}
+            />
+            <input
+              type="range" min="0" max="20" value={inputB}
+              onChange={e => setInputB(Number(e.target.value))}
+              style={{width: '120px', accentColor: 'var(--accent2)'}}
+            />
+          </div>
+
+          <span style={{fontSize: '40px', color: 'var(--text-dim)'}}>=</span>
+
+          <div className="calc-result">{result}</div>
+        </div>
+      </div>
+
+      <div className={`card step-fade ${step >= 2 ? 'visible' : 'pending'}`} style={{marginTop: '16px'}}>
+        <h3>💡 教學提示</h3>
+        <p>
+          這種即時計算的模板可以替換成任何公式：機率分佈的參數、矩陣運算、遞迴計算…<br/>
+          只要改 <code>result</code> 的計算邏輯就行。
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Slide 5: 流程圖動畫 ───
+function SlideFlowchart({ step }) {
+  const nodes = [
+    { text: '輸入資料', bg: 'var(--accent)', color: 'var(--bg-primary)' },
+    { text: '前處理', bg: 'var(--accent2)', color: 'var(--bg-primary)' },
+    { text: '模型計算', bg: 'var(--accent3)', color: 'var(--bg-primary)' },
+    { text: '輸出結果', bg: 'var(--accent4)', color: 'var(--bg-primary)' },
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">🔄 流程圖動畫範例</h2>
+      <p className="animate-in delay-1">每按一步，流程圖會展開一個節點</p>
+
+      <div className="flow-container" style={{marginTop: '40px'}}>
+        {nodes.map((node, i) => (
+          <React.Fragment key={i}>
+            <div
+              className={`flow-box ${step > i ? 'visible' : 'pending'}`}
+              style={{
+                background: node.bg,
+                color: node.color,
+                transitionDelay: `0.1s`,
+              }}
+            >
+              {node.text}
+            </div>
+            {i < nodes.length - 1 && (
+              <span
+                className={`flow-arrow ${step > i ? 'visible' : 'pending'}`}
+                style={{ transitionDelay: `0.2s` }}
+              >
+                →
+              </span>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className={`card step-fade ${step >= nodes.length + 1 ? 'visible' : 'pending'}`} style={{marginTop: '32px'}}>
+        <h3>✅ 流程完成</h3>
+        <p>
+          這個模板可以改成任何流程：演算法步驟、系統架構、資料流向…<br/>
+          每個節點的顏色、文字都可以自訂。
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Slide 6: 表格 + 可捲動示範 ───
+function SlideTable({ step }) {
+  const rows = [
+    ['氣泡排序', 'O(n²)', 'O(1)', '✅ 穩定'],
+    ['快速排序', 'O(n log n)', 'O(log n)', '❌ 不穩定'],
+    ['合併排序', 'O(n log n)', 'O(n)', '✅ 穩定'],
+    ['堆積排序', 'O(n log n)', 'O(1)', '❌ 不穩定'],
+    ['插入排序', 'O(n²)', 'O(1)', '✅ 穩定'],
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">📋 表格範例（可向下捲動）</h2>
+      <p className="animate-in delay-1">
+        當單頁內容超過螢幕高度時，可以向下捲動
+      </p>
+
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <table>
+          <thead>
+            <tr>
+              <th>演算法</th>
+              <th>時間複雜度</th>
+              <th>空間複雜度</th>
+              <th>穩定性</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i}>
+                {row.map((cell, j) => (
+                  <td key={j}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={`card card-accent step-fade ${step >= 2 ? 'visible' : 'pending'}`} style={{marginTop: '20px'}}>
+        <h3>📌 重點整理</h3>
+        <p>• 需要穩定排序 → 選合併排序</p>
+        <p>• 空間有限 → 選堆積排序</p>
+        <p>• 幾乎已排序的資料 → 插入排序最快</p>
+      </div>
+
+      <div className={`card step-fade ${step >= 3 ? 'visible' : 'pending'}`} style={{marginTop: '20px'}}>
+        <h3>🔍 補充說明</h3>
+        <p>
+          這段內容故意多寫一些，是為了展示「單頁可捲動」的功能。
+          當你的某一頁有很多內容（例如很長的推導過程、大張的表格、或很多程式碼），
+          不需要硬塞進一個螢幕裡。觀眾可以向下捲動看完整內容。
+        </p>
+        <p style={{marginTop: '16px'}}>
+          不過要注意：簡報的目的是輔助口頭講解，不是讓觀眾自己閱讀。
+          所以即使可以捲動，每一頁的核心訊息還是建議在第一個螢幕就能看到。
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Slide 7: 結尾頁 ───
+function SlideEnd({ step }) {
+  return (
+    <div className="slide end-slide">
+      <h1 className="animate-in" style={{fontSize: '72px'}}>Q & A</h1>
+      <p className="subtitle animate-in delay-2">感謝聆聽！</p>
+      <p className="animate-in delay-3" style={{color: 'var(--text-dim)', fontSize: '24px'}}>
+        ← 按左鍵回到前一頁
+      </p>
+    </div>
+  );
+}
+
+/* ==================================================================
+   SLIDES CONFIG
+   在這裡註冊所有投影片和它們的分步數量
+   ================================================================== */
+const SLIDES = [
+  { component: SlideCover,     totalSteps: 0, title: '封面' },
+  { component: SlideStepText,  totalSteps: 3, title: '分步文字' },
+  { component: SlideBarChart,  totalSteps: 3, title: '長條圖' },
+  { component: SlideLiveCalc,  totalSteps: 2, title: '即時計算' },
+  { component: SlideFlowchart, totalSteps: 5, title: '流程圖' },
+  { component: SlideTable,     totalSteps: 3, title: '表格' },
+  { component: SlideEnd,       totalSteps: 0, title: '結尾' },
+];
+
+/* ==================================================================
+   APP (主控制器)
+   ================================================================== */
+function App() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const slide = SLIDES[currentSlide];
+  const canPrevPage  = currentSlide > 0;
+  const canNextPage  = currentSlide < SLIDES.length - 1;
+  const canPrevStep  = currentStep > 0;
+  const canNextStep  = currentStep < slide.totalSteps;
+  const hasSteps     = slide.totalSteps > 0;
+
+  // ── 換頁：完全獨立，不管 step ──
+  const goNextPage = useCallback(() => {
+    if (!canNextPage) return;
+    setCurrentSlide(s => s + 1);
+    setCurrentStep(0);
+  }, [canNextPage]);
+
+  const goPrevPage = useCallback(() => {
+    if (!canPrevPage) return;
+    setCurrentSlide(s => s - 1);
+    setCurrentStep(0);
+  }, [canPrevPage]);
+
+  // ── 換步：只動 step，不動 slide ──
+  const goNextStep = useCallback(() => {
+    if (!canNextStep) return;
+    setCurrentStep(s => s + 1);
+  }, [canNextStep]);
+
+  const goPrevStep = useCallback(() => {
+    if (!canPrevStep) return;
+    setCurrentStep(s => s - 1);
+  }, [canPrevStep]);
+
+  // Reset scroll when slide changes
+  useEffect(() => {
+    const el = document.querySelector('.slide-wrapper.current');
+    if (el) el.scrollTop = 0;
+  }, [currentSlide]);
+
+  // Keyboard: ← → 換頁, ↑ ↓ 換步
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      switch (e.key) {
+        case 'ArrowRight': e.preventDefault(); goNextPage(); break;
+        case 'ArrowLeft':  e.preventDefault(); goPrevPage(); break;
+        case 'ArrowDown':  e.preventDefault(); goNextStep(); break;
+        case 'ArrowUp':    e.preventDefault(); goPrevStep(); break;
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [goNextPage, goPrevPage, goNextStep, goPrevStep]);
+
+  const getWrapperClass = (idx) => {
+    if (idx === currentSlide) return 'slide-wrapper current';
+    if (idx < currentSlide) return 'slide-wrapper prev';
+    if (idx === currentSlide + 1) return 'slide-wrapper next';
+    return 'slide-wrapper hidden';
+  };
+
+  const progress = ((currentSlide) / (SLIDES.length - 1)) * 100;
+
+  return (
+    <>
+      {/* Progress bar */}
+      <div className="progress-bar" style={{ width: `${progress}%` }} />
+
+      {/* Keyboard hint */}
+      <div className="kbd-hint">
+        <span className="kbd">←</span><span className="kbd">→</span>
+        <span>換頁</span>
+        <span style={{margin: '0 6px', color: 'var(--bg-card)'}}>│</span>
+        <span className="kbd">↑</span><span className="kbd">↓</span>
+        <span>換步</span>
+      </div>
+
+      {/* Slides viewport */}
+      <div className="slides-viewport">
+        {SLIDES.map((s, idx) => {
+          const SlideComp = s.component;
+          return (
+            <div key={idx} className={getWrapperClass(idx)}>
+              <SlideComp step={idx === currentSlide ? currentStep : 0} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bottom navigation — 4 buttons */}
+      <div className="nav-bar">
+        {/* 左側：換頁 */}
+        <button className="nav-btn nav-btn-page" onClick={goPrevPage} disabled={!canPrevPage}>
+          ◀◀ 上一頁
+        </button>
+
+        {/* 中左：換步（上一步） */}
+        <button className="nav-btn nav-btn-step" onClick={goPrevStep} disabled={!canPrevStep}>
+          ▲ 上一步
+        </button>
+
+        {/* 中間：頁碼 + 步驟圓點 */}
+        <div className="nav-center">
+          <span className="page-indicator">
+            {currentSlide + 1} / {SLIDES.length}
+          </span>
+          {hasSteps && (
+            <div className="step-dots">
+              {Array.from({ length: slide.totalSteps + 1 }, (_, i) => (
+                <div
+                  key={i}
+                  className={`step-dot ${i === currentStep ? 'active' : i < currentStep ? 'done' : ''}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 中右：換步（下一步） */}
+        <button className="nav-btn nav-btn-step" onClick={goNextStep} disabled={!canNextStep}>
+          下一步 ▼
+        </button>
+
+        {/* 右側：換頁 */}
+        <button className="nav-btn nav-btn-page" onClick={goNextPage} disabled={!canNextPage}>
+          下一頁 ▶▶
+        </button>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
