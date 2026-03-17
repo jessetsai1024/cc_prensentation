@@ -1591,6 +1591,137 @@ function SlideOperations({ step }) {
   );
 }
 
+function SlidePlugin({ step }) {
+  const plugins = [
+    { icon: '🎭', name: 'Playwright', desc: '瀏覽器自動化測試，直接在對話中操控網頁', cls: 'highlight' },
+    { icon: '📚', name: 'Context7', desc: '即時查詢套件文件，取得最新 API 資訊', cls: 'highlight-green' },
+    { icon: '🔧', name: 'Chrome DevTools', desc: '瀏覽器調試工具，截圖、效能分析一應俱全', cls: 'highlight-yellow' },
+  ];
+
+  const youtubeBlock = (videoId, label) => (
+    <a
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'block', textDecoration: 'none' }}
+    >
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        background: '#000',
+        cursor: 'pointer',
+      }}>
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={label}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(255,0,0,0.85)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 0,
+            height: 0,
+            borderTop: '18px solid transparent',
+            borderBottom: '18px solid transparent',
+            borderLeft: '30px solid #fff',
+            marginLeft: '6px',
+          }}></div>
+        </div>
+      </div>
+      <p style={{ textAlign: 'center', marginTop: '12px', color: 'var(--text-secondary)', fontSize: '24px' }}>
+        {label}
+      </p>
+    </a>
+  );
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">Plugin 生態系</h2>
+      <p className="animate-in delay-1" style={{ color: 'var(--text-secondary)', fontSize: '28px', marginBottom: '32px' }}>
+        透過 Plugin 為 Claude Code 擴充無限可能
+      </p>
+
+      {/* Step 1: 什麼是 Plugin */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginBottom: '16px' }}>
+          <span className="highlight">什麼是 Plugin？</span>
+        </h3>
+        <div className="card card-accent">
+          <p style={{ marginBottom: '16px' }}>
+            Plugin 是 Claude Code 的<span className="highlight">擴充功能</span>，透過 <code>/install</code> 指令一鍵安裝社群或官方套件，為 Claude Code 增加新能力。
+          </p>
+          <p style={{ marginBottom: '12px', fontWeight: 700 }}>Plugin 可提供的能力：</p>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            <li style={{ marginBottom: '8px', fontSize: '28px' }}>🔌 <span className="highlight">MCP Server</span> — 連接外部工具與服務</li>
+            <li style={{ marginBottom: '8px', fontSize: '28px' }}>⚡ <span className="highlight-pink">Slash Command</span> — 自訂斜線指令</li>
+            <li style={{ marginBottom: '8px', fontSize: '28px' }}>🪝 <span className="highlight-green">Hook</span> — 事件觸發的自動化腳本</li>
+          </ul>
+          <pre style={{
+            background: 'rgba(0,0,0,0.4)',
+            borderRadius: '12px',
+            padding: '20px',
+            fontSize: '24px',
+            fontFamily: 'var(--font-mono)',
+            lineHeight: 1.6,
+            overflowX: 'auto',
+            marginTop: '16px',
+          }}>claude /install @anthropic-ai/claude-code-plugin-name</pre>
+        </div>
+      </div>
+
+      {/* Step 2: Plugin Market */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-pink">Plugin Market</span>
+        </h3>
+        <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
+          官方與社群共同維護的 Plugin 市集，持續成長中
+        </p>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          {plugins.map((p, i) => (
+            <div key={i} className="card" style={{ flex: '1 1 280px', minWidth: '260px' }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{p.icon}</p>
+              <p style={{ fontSize: '30px', fontWeight: 700, marginBottom: '8px' }}>
+                <span className={p.cls}>{p.name}</span>
+              </p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 3: YouTube 展示影片 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">Plugin 示範</span>
+        </h3>
+        {youtubeBlock('eckPPw87mr0', '點擊播放 — Plugin 示範影片')}
+      </div>
+    </div>
+  );
+}
+
 /* ==================================================================
    SLIDES CONFIG
    ================================================================== */
@@ -1605,6 +1736,7 @@ const SLIDES = [
   { component: SlideInstall, totalSteps: 5, title: '安裝 Claude Code' },
   { component: SlideOutputStyle, totalSteps: 4, title: 'Output Style' },
   { component: SlideOperations, totalSteps: 5, title: '基本操作與設定' },
+  { component: SlidePlugin, totalSteps: 3, title: 'Plugin 生態系' },
 ];
 
 /* ==================================================================
