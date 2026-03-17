@@ -1047,6 +1047,181 @@ function SlideUseCases({ step }) {
   );
 }
 
+// ─── Slide 7: Section Divider — 基本設置 ───
+function SlideSectionSetup({ step, isActive }) {
+  const title = '基本設置';
+  const directions = ['left', 'top', 'right', 'bottom'];
+  const [animateKey, setAnimateKey] = useState(0);
+
+  useEffect(() => {
+    if (isActive) setAnimateKey(k => k + 1);
+  }, [isActive]);
+
+  return (
+    <div className="slide title-slide">
+      <h1 key={animateKey} style={{ fontSize: '80px', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>
+        {isActive && title.split('').map((char, i) => (
+          <span
+            key={i}
+            className={`section-title-char fly-${directions[i % 4]}`}
+            style={{
+              animationDelay: `${i * 0.12}s`,
+              background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            {char === ' ' ? '\u00A0' : char}
+          </span>
+        ))}
+      </h1>
+    </div>
+  );
+}
+
+// ─── Slide 8: 安裝 Claude Code ───
+function SlideInstall({ step }) {
+  const flowNodes = [
+    { text: '執行 claude', bg: 'var(--accent)', emoji: '⌨️' },
+    { text: '瀏覽器開啟', bg: 'var(--accent2)', emoji: '🌐' },
+    { text: '登入帳號', bg: 'var(--accent4)', emoji: '🔑' },
+    { text: '驗證完成', bg: 'var(--accent3)', emoji: '✅' },
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">安裝 Claude Code</h2>
+      <p className="subtitle animate-in delay-1">三分鐘搞定安裝與登入</p>
+
+      {/* Step 1: 環境需求 */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '20px', marginBottom: '16px' }}>
+          <span className="highlight">環境需求</span>
+        </h3>
+        <div className="card card-accent">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div>
+              <p style={{ fontWeight: 700, marginBottom: '8px', color: 'var(--accent)' }}>作業系統</p>
+              <p>• macOS 13+</p>
+              <p>• Windows 10 (1809+)</p>
+              <p>• Ubuntu 20.04+ / Debian 10+</p>
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, marginBottom: '8px', color: 'var(--accent)' }}>其他需求</p>
+              <p>• RAM 4GB+</p>
+              <p>• Shell：Bash / Zsh / Fish / PowerShell</p>
+              <p>• Windows 需安裝 <span className="highlight-yellow">Git for Windows</span></p>
+            </div>
+          </div>
+          <p style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            需要 <span className="highlight-pink">Pro / Max / Teams / Enterprise</span> 帳號才能使用
+          </p>
+        </div>
+      </div>
+
+      {/* Step 2: 推薦安裝方式 */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">推薦安裝方式</span>（原生安裝）
+        </h3>
+        <div className="pricing-highlight">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <p style={{ fontWeight: 700, color: 'var(--accent3)', marginBottom: '6px' }}>macOS / Linux / WSL</p>
+              <div style={{
+                background: 'var(--bg-primary)', borderRadius: '10px', padding: '14px 20px',
+                fontFamily: 'var(--font-mono)', fontSize: '24px', letterSpacing: '0.5px',
+              }}>
+                curl -fsSL https://claude.ai/install.sh | bash
+              </div>
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, color: 'var(--accent3)', marginBottom: '6px' }}>Windows PowerShell</p>
+              <div style={{
+                background: 'var(--bg-primary)', borderRadius: '10px', padding: '14px 20px',
+                fontFamily: 'var(--font-mono)', fontSize: '24px', letterSpacing: '0.5px',
+              }}>
+                irm https://claude.ai/install.ps1 | iex
+              </div>
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, color: 'var(--accent3)', marginBottom: '6px' }}>Windows CMD</p>
+              <div style={{
+                background: 'var(--bg-primary)', borderRadius: '10px', padding: '14px 20px',
+                fontFamily: 'var(--font-mono)', fontSize: '22px', letterSpacing: '0.5px',
+              }}>
+                curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 3: 其他安裝方式 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">其他安裝方式</span>
+        </h3>
+        <div className="card">
+          <p>• <span className="highlight-green">Homebrew</span>：<code>brew install claude-code</code></p>
+          <p>• <span className="highlight-green">WinGet</span>：<code>winget install Anthropic.ClaudeCode</code></p>
+          <p>• <span className="highlight-yellow">npm</span>：<code>npm install -g @anthropic-ai/claude-code</code>
+            <span style={{ color: 'var(--danger)', fontSize: '24px', marginLeft: '8px' }}>(deprecated)</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Step 4: 首次登入流程 */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">首次登入流程</span>
+        </h3>
+        <div className="flow-container">
+          {flowNodes.map((node, i) => (
+            <React.Fragment key={i}>
+              <div
+                className={`flow-box ${step >= 4 ? 'visible' : 'pending'}`}
+                style={{
+                  background: node.bg,
+                  color: '#fff',
+                  transitionDelay: `${i * 0.2}s`,
+                }}
+              >
+                <span style={{ display: 'block', fontSize: '32px', marginBottom: '4px' }}>{node.emoji}</span>
+                {node.text}
+              </div>
+              {i < flowNodes.length - 1 && (
+                <span
+                  className={`flow-arrow ${step >= 4 ? 'visible' : 'pending'}`}
+                  style={{ transitionDelay: `${i * 0.2 + 0.1}s` }}
+                >→</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <p style={{ fontSize: '26px', color: 'var(--text-secondary)' }}>
+            驗證安裝：<code>claude --version</code>　｜　問題診斷：<code>claude doctor</code>
+          </p>
+        </div>
+      </div>
+
+      {/* Step 5: 安裝小提示 */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">安裝小提示</span>
+        </h3>
+        <div className="card card-accent">
+          <p>• 原生安裝會<span className="highlight-green">自動更新</span>，不用手動操作</p>
+          <p>• 遇到問題？執行 <code>claude doctor</code> 進行自我診斷</p>
+          <p>• Windows 建議使用 <span className="highlight-yellow">WSL</span> 環境，體驗更好</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ==================================================================
    SLIDES CONFIG
    ================================================================== */
@@ -1057,6 +1232,8 @@ const SLIDES = [
   { component: SlideHistory, totalSteps: 11, title: '發展時間軸' },
   { component: SlidePricing, totalSteps: 4, title: '收費機制' },
   { component: SlideUseCases, totalSteps: 6, title: 'Claude Code 能做什麼' },
+  { component: SlideSectionSetup, totalSteps: 0, title: '基本設置' },
+  { component: SlideInstall, totalSteps: 5, title: '安裝 Claude Code' },
 ];
 
 /* ==================================================================
