@@ -1223,6 +1223,192 @@ function SlideInstall({ step }) {
 }
 
 /* ==================================================================
+   SlideOutputStyle — Output Style 自訂輸出風格
+   ================================================================== */
+function SlideOutputStyle({ step }) {
+  const builtinStyles = [
+    { name: 'Default', desc: '預設軟體工程模式', cls: 'highlight' },
+    { name: 'Explanatory', desc: '邊做邊教，提供 Insights', cls: 'highlight-green' },
+    { name: 'Learning', desc: '協作學習，加入 TODO(human) 讓你動手寫', cls: 'highlight-yellow' },
+  ];
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">Output Style — 自訂輸出風格</h2>
+      <p className="animate-in delay-1" style={{ color: 'var(--text-secondary)', fontSize: '28px', marginBottom: '32px' }}>
+        讓 Claude Code 用你喜歡的方式說話
+      </p>
+
+      {/* Step 1: 什麼是 Output Style */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <div className="card card-accent">
+          <h3 style={{ marginBottom: '16px' }}>
+            <span className="highlight">什麼是 Output Style？</span>
+          </h3>
+          <p style={{ marginBottom: '16px' }}>
+            直接修改 Claude Code 的<span className="highlight-pink">系統提示</span>，將它適配用於軟體工程以外的任何用途
+          </p>
+          <p style={{ marginBottom: '24px', color: 'var(--text-secondary)' }}>
+            核心能力不變：執行指令、讀寫檔案、追蹤待辦事項
+          </p>
+          <h3 style={{ marginBottom: '12px' }}>三種內建樣式</h3>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            {builtinStyles.map((s, i) => (
+              <div key={i} className="card" style={{ flex: '1 1 200px', minWidth: '200px' }}>
+                <p style={{ fontSize: '30px', fontWeight: 700, marginBottom: '8px' }}>
+                  <span className={s.cls}>{s.name}</span>
+                </p>
+                <p style={{ color: 'var(--text-secondary)' }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Step 2: 設定與自訂方式 */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <div className="pricing-highlight" style={{ marginTop: '28px' }}>
+          <h3 style={{ marginBottom: '16px' }}>
+            <span className="highlight">設定與自訂</span>
+          </h3>
+          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 300px' }}>
+              <p style={{ fontSize: '30px', fontWeight: 700, marginBottom: '8px' }}>
+                ⚡ 快速切換
+              </p>
+              <p>執行 <code>/config</code> → 選擇「輸出樣式」</p>
+              <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>
+                儲存位置：<code>.claude/settings.local.json</code>
+              </p>
+            </div>
+            <div style={{ flex: '1 1 300px' }}>
+              <p style={{ fontSize: '30px', fontWeight: 700, marginBottom: '8px' }}>
+                ✨ 自訂樣式
+              </p>
+              <p>建立 Markdown 檔案：</p>
+              <p style={{ marginTop: '4px' }}>
+                使用者級：<code>~/.claude/output-styles/</code>
+              </p>
+              <p>
+                專案級：<code>.claude/output-styles/</code>
+              </p>
+            </div>
+          </div>
+          <div style={{ marginTop: '20px' }}>
+            <p style={{ marginBottom: '8px', fontWeight: 700 }}>自訂檔案結構：</p>
+            <pre style={{
+              background: 'rgba(0,0,0,0.4)',
+              borderRadius: '12px',
+              padding: '20px',
+              fontSize: '24px',
+              fontFamily: 'var(--font-mono)',
+              lineHeight: 1.6,
+              overflowX: 'auto',
+            }}>{`---
+name: My Custom Style
+description: 簡短描述
+keep-coding-instructions: false
+---
+# 自訂指令內容...`}</pre>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 3: 實際範例 — 貓娘風格 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <div className="card" style={{ marginTop: '28px' }}>
+          <h3 style={{ marginBottom: '16px' }}>
+            <span className="highlight-pink">實際範例：貓娘風格</span>
+          </h3>
+          <pre style={{
+            background: 'rgba(0,0,0,0.4)',
+            borderRadius: '12px',
+            padding: '20px',
+            fontSize: '24px',
+            fontFamily: 'var(--font-mono)',
+            lineHeight: 1.6,
+            overflowX: 'auto',
+          }}>{`---
+name: catgirlstyle
+description: 可愛貓娘助手風格
+---
+# 貓娘風格輸出指令
+- 句尾加「喵～」「にゃ～」
+- 使用顏文字 (=^・ω・^=)
+- 自稱「本喵」「人家」
+- 稱呼使用者「主人」`}</pre>
+          <p style={{ marginTop: '16px', fontSize: '28px', textAlign: 'center' }}>
+            <span className="highlight-pink">↑ 這份簡報就是用這個風格產生的喵～ (=^・ω・^=)</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Step 4: YouTube 展示影片 */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">展示影片</span>
+        </h3>
+        <a
+          href="https://www.youtube.com/watch?v=3Uy4H4UvEuQ"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'block', textDecoration: 'none' }}
+        >
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            paddingTop: '56.25%',
+            borderRadius: 'var(--radius)',
+            overflow: 'hidden',
+            background: '#000',
+            cursor: 'pointer',
+          }}>
+            <img
+              src="https://img.youtube.com/vi/3Uy4H4UvEuQ/maxresdefault.jpg"
+              alt="Output Style 展示影片"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            {/* Play button overlay */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255,0,0,0.85)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <div style={{
+                width: 0,
+                height: 0,
+                borderTop: '18px solid transparent',
+                borderBottom: '18px solid transparent',
+                borderLeft: '30px solid #fff',
+                marginLeft: '6px',
+              }}></div>
+            </div>
+          </div>
+          <p style={{ textAlign: 'center', marginTop: '12px', color: 'var(--text-secondary)', fontSize: '24px' }}>
+            點擊播放 YouTube 影片
+          </p>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDES CONFIG
    ================================================================== */
 const SLIDES = [
@@ -1234,6 +1420,7 @@ const SLIDES = [
   { component: SlideUseCases, totalSteps: 6, title: 'Claude Code 能做什麼' },
   { component: SlideSectionSetup, totalSteps: 0, title: '基本設置' },
   { component: SlideInstall, totalSteps: 5, title: '安裝 Claude Code' },
+  { component: SlideOutputStyle, totalSteps: 4, title: 'Output Style' },
 ];
 
 /* ==================================================================
