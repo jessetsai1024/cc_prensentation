@@ -1409,6 +1409,189 @@ description: 可愛貓娘助手風格
 }
 
 /* ==================================================================
+   SlideOperations — 基本操作與設定
+   ================================================================== */
+function SlideOperations({ step }) {
+  const permModes = [
+    { icon: '📋', name: 'Plan Mode', desc: '只規劃不執行，確認後才動手', cls: 'highlight', detail: '適合初學者，先看計畫再同意' },
+    { icon: '🛡️', name: 'Default Mode', desc: '每次操作前詢問你', cls: 'highlight-green', detail: '預設模式，安全又靈活' },
+    { icon: '✏️', name: 'Accept Edits On', desc: '自動接受檔案編輯', cls: 'highlight-yellow', detail: '信任 Claude 時使用，效率最高' },
+  ];
+
+  const operations = [
+    { icon: '🔄', title: '更新 Claude Code', cmd: 'claude update', desc: '一鍵更新到最新版本', color: 'var(--accent3)', borderColor: 'var(--accent3)' },
+    { icon: '💬', title: '繼續對話', cmd: 'claude --continue / --resume', desc: '--continue 繼續上次對話\n--resume 選擇歷史對話恢復', color: 'var(--accent)', borderColor: 'var(--accent)' },
+    { icon: '⚠️', title: '--dangerously-skip-permissions', cmd: 'claude --dangerously-skip-permissions', desc: '跳過所有權限檢查，CI/CD 自動化用途', color: 'var(--danger)', borderColor: 'var(--danger)' },
+  ];
+
+  const youtubeBlock = (videoId, label) => (
+    <a
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'block', textDecoration: 'none' }}
+    >
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        background: '#000',
+        cursor: 'pointer',
+      }}>
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={label}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(255,0,0,0.85)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 0,
+            height: 0,
+            borderTop: '18px solid transparent',
+            borderBottom: '18px solid transparent',
+            borderLeft: '30px solid #fff',
+            marginLeft: '6px',
+          }}></div>
+        </div>
+      </div>
+      <p style={{ textAlign: 'center', marginTop: '12px', color: 'var(--text-secondary)', fontSize: '24px' }}>
+        {label}
+      </p>
+    </a>
+  );
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">基本操作與設定</h2>
+      <p className="animate-in delay-1" style={{ color: 'var(--text-secondary)', fontSize: '28px', marginBottom: '32px' }}>
+        權限模式、繁體中文、更新與進階操作
+      </p>
+
+      {/* Step 1: 三種權限模式 */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginBottom: '16px' }}>
+          <span className="highlight">三種權限模式</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          {permModes.map((m, i) => (
+            <div key={i} className="card" style={{ flex: '1 1 280px', minWidth: '260px' }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{m.icon}</p>
+              <p style={{ fontSize: '30px', fontWeight: 700, marginBottom: '8px' }}>
+                <span className={m.cls}>{m.name}</span>
+              </p>
+              <p style={{ marginBottom: '8px' }}>{m.desc}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{m.detail}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 2: 權限模式示範影片 */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">權限模式示範</span>
+        </h3>
+        {youtubeBlock('XiAEaOoo7SM', '點擊播放 — 權限模式示範影片')}
+      </div>
+
+      {/* Step 3: 讓 Claude Code 說繁體中文 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-pink">讓 Claude Code 說繁體中文</span>
+        </h3>
+        <div className="card card-accent">
+          <p style={{ marginBottom: '12px' }}>
+            請 Claude Code 自行修改 <code>~/.claude/CLAUDE.md</code>，加入一行：
+          </p>
+          <pre style={{
+            background: 'rgba(0,0,0,0.4)',
+            borderRadius: '12px',
+            padding: '20px',
+            fontSize: '24px',
+            fontFamily: 'var(--font-mono)',
+            lineHeight: 1.6,
+            overflowX: 'auto',
+          }}>請務必使用繁體中文回答</pre>
+          <p style={{ marginTop: '12px', color: 'var(--text-secondary)' }}>
+            這是<span className="highlight">全域指令</span>，所有專案都會生效
+          </p>
+        </div>
+        <div style={{ marginTop: '20px' }}>
+          {youtubeBlock('xQDHECQdV_U', '點擊播放 — 繁體中文設定示範')}
+        </div>
+      </div>
+
+      {/* Step 4: 三個實用操作 */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">實用操作</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          {operations.map((op, i) => (
+            <div key={i} className="card" style={{
+              flex: '1 1 280px',
+              minWidth: '260px',
+              borderLeft: `4px solid ${op.borderColor}`,
+            }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{op.icon}</p>
+              <p style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px', color: op.color }}>
+                {op.title}
+              </p>
+              <p style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '22px',
+                background: 'rgba(0,0,0,0.3)',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                marginBottom: '12px',
+                wordBreak: 'break-all',
+              }}>
+                {op.cmd}
+              </p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px', whiteSpace: 'pre-line' }}>{op.desc}</p>
+              {i === 2 && (
+                <p style={{ marginTop: '12px', color: 'var(--danger)', fontWeight: 700, fontSize: '24px' }}>
+                  ⛔ 危險！僅限自動化環境，切勿日常使用
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 5: 操作示範影片 */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">操作示範</span>
+        </h3>
+        {youtubeBlock('XcATSx5e0pk', '點擊播放 — 操作示範影片')}
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDES CONFIG
    ================================================================== */
 const SLIDES = [
@@ -1421,6 +1604,7 @@ const SLIDES = [
   { component: SlideSectionSetup, totalSteps: 0, title: '基本設置' },
   { component: SlideInstall, totalSteps: 5, title: '安裝 Claude Code' },
   { component: SlideOutputStyle, totalSteps: 4, title: 'Output Style' },
+  { component: SlideOperations, totalSteps: 5, title: '基本操作與設定' },
 ];
 
 /* ==================================================================
