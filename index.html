@@ -2157,6 +2157,351 @@ function SlideLSP({ step }) {
 }
 
 /* ==================================================================
+   SlideContextWindow — Context Window 工作記憶
+   ================================================================== */
+function SlideContextWindow({ step }) {
+  const youtubeBlock = (videoId, label) => (
+    <a
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'block', textDecoration: 'none' }}
+    >
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        background: '#000',
+        cursor: 'pointer',
+      }}>
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={label}
+          style={{
+            position: 'absolute',
+            top: 0, left: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80px', height: '80px',
+          background: 'rgba(255,0,0,0.85)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 0, height: 0,
+            borderTop: '18px solid transparent',
+            borderBottom: '18px solid transparent',
+            borderLeft: '30px solid #fff',
+            marginLeft: '6px',
+          }}></div>
+        </div>
+      </div>
+      <p style={{ textAlign: 'center', marginTop: '12px', color: 'var(--text-secondary)', fontSize: '24px' }}>
+        {label}
+      </p>
+    </a>
+  );
+
+  /* Token 分配長條圖資料 */
+  const tokenBars = [
+    { label: 'System Prompt', tokens: '~8.2K', pct: 4.1, color: '#f97316' },
+    { label: 'System Tools', tokens: '~11.6K', pct: 5.8, color: '#fb923c' },
+    { label: 'MCP Tools', tokens: '~4.5K', pct: 2.3, color: '#a78bfa' },
+    { label: 'CLAUDE.md', tokens: '~3.9K', pct: 1.9, color: '#818cf8' },
+    { label: '對話紀錄', tokens: 'variable', pct: 45, color: 'var(--accent)', dynamic: true },
+    { label: '檔案 & 指令輸出', tokens: 'variable', pct: 35, color: 'var(--accent3)', dynamic: true },
+  ];
+
+  /* 退化等級 */
+  const degradationLevels = [
+    { emoji: '🟢', range: '0 – 40%', label: '黃金區間', desc: '回答精準、記得所有指示', color: 'var(--accent3)' },
+    { emoji: '🔵', range: '40 – 65%', label: '正常工作', desc: '偶爾忽略早期細節', color: 'var(--accent)' },
+    { emoji: '🟡', range: '65 – 80%', label: '開始退化', desc: '「中間遺忘」出現，建議 /compact', color: 'var(--accent4)' },
+    { emoji: '🟠', range: '80 – 92%', label: '明顯退化', desc: '忘記早期指示、品質下降', color: '#f97316' },
+    { emoji: '🔴', range: '92%+', label: '危險區', desc: 'Auto-compaction 觸發', color: 'var(--danger)' },
+  ];
+
+  /* 中間遺忘視覺化 */
+  const middleLostBlocks = ['✅','✅','❌','❌','❌','❌','✅','✅'];
+
+  /* 管理指令 */
+  const commands = [
+    { cmd: '/context', desc: '查看 token 使用狀況', detail: '像儲存空間面板，看哪裡最佔空間', color: 'var(--accent)' },
+    { cmd: '/compact [指示]', desc: '手動壓縮對話', detail: '釋放 60-80% 空間，可指定保留什麼', color: 'var(--accent3)' },
+    { cmd: '/clear', desc: '完全清空對話', detail: '切換任務時使用，重新開始', color: 'var(--accent4)' },
+  ];
+
+  /* Auto-compaction 流程 */
+  const compactionFlow = [
+    { text: '使用率 75-92%', bg: 'var(--danger)' },
+    { text: '掃描對話', bg: 'var(--accent)' },
+    { text: '保留決策', bg: 'var(--accent3)' },
+    { text: '丟棄冗長輸出', bg: '#f97316' },
+    { text: '生成摘要', bg: 'var(--accent4)' },
+  ];
+
+  return (
+    <div className="slide">
+      {/* 標題 */}
+      <h2 className="animate-in">
+        <span className="highlight">Context Window</span> — Claude 的工作記憶
+      </h2>
+      <p className="animate-in delay-1" style={{ fontSize: '28px', color: 'var(--text-secondary)', marginBottom: '32px' }}>
+        理解、監控、管理你的 token 預算
+      </p>
+
+      {/* ===== Step 0：什麼是 Context Window ===== */}
+      <div>
+        <div className="card" style={{ marginBottom: '24px', border: '1px solid var(--accent)', padding: '24px 32px' }}>
+          <p style={{ fontSize: '28px' }}>
+            Context Window 就像 Claude 的<span className="highlight">工作桌面</span>，桌面大小 = <span className="highlight-pink" style={{ fontSize: '32px' }}>200,000 tokens</span>（約 15 萬字）
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+          {[
+            { icon: '🏗️', title: '固定家具', desc: 'System Prompt + 工具定義', sub: '搬進來就佔空間', color: '#f97316' },
+            { icon: '📋', title: '牆上規則', desc: 'CLAUDE.md', sub: '每次都會讀取', color: '#818cf8' },
+            { icon: '💬', title: '桌上文件', desc: '對話紀錄', sub: '聊越多堆越高', color: 'var(--accent)' },
+            { icon: '📂', title: '打開的書', desc: '檔案讀取 & 指令輸出', sub: '最大消耗者', color: 'var(--accent3)' },
+          ].map((item, i) => (
+            <div key={i} className="card" style={{ borderLeft: `4px solid ${item.color}`, padding: '20px 24px' }}>
+              <p style={{ fontSize: '32px', marginBottom: '4px' }}>{item.icon} <strong>{item.title}</strong></p>
+              <p style={{ fontSize: '26px' }}>{item.desc}</p>
+              <p style={{ fontSize: '22px', color: 'var(--text-secondary)' }}>{item.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="card" style={{ background: 'rgba(244, 114, 182, 0.12)', border: '1px solid var(--accent2)', padding: '16px 24px' }}>
+          <p style={{ fontSize: '26px', textAlign: 'center' }}>
+            Context Window 是<span className="highlight-pink">共享</span>的 — 輸入 + 輸出 + 檔案 + 工具結果<span className="highlight-pink">全算在內</span>
+          </p>
+        </div>
+      </div>
+
+      {/* ===== Step 1：Token 分配 ===== */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>
+          <span className="highlight">Token 怎麼分配？</span>
+        </h3>
+
+        <div className="card" style={{ padding: '24px 32px', marginBottom: '16px' }}>
+          {tokenBars.map((bar, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', gap: '12px' }}>
+              <span style={{ fontSize: '22px', width: '180px', textAlign: 'right', color: 'var(--text-secondary)', flexShrink: 0 }}>
+                {bar.label}
+              </span>
+              <div style={{ flex: 1, background: 'var(--bg-primary)', borderRadius: '8px', height: '32px', overflow: 'hidden' }}>
+                <div style={{
+                  width: `${Math.min(bar.pct * 2, 100)}%`,
+                  height: '100%',
+                  background: bar.color,
+                  borderRadius: '8px',
+                  transition: 'width 0.8s ease',
+                  opacity: bar.dynamic ? 0.7 : 1,
+                  backgroundImage: bar.dynamic ? 'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 16px)' : 'none',
+                }}></div>
+              </div>
+              <span style={{ fontSize: '22px', width: '120px', color: bar.color, flexShrink: 0 }}>
+                {bar.tokens} ({bar.dynamic ? '動態' : bar.pct + '%'})
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="card" style={{ border: '1px solid var(--accent4)', padding: '16px 24px' }}>
+            <p style={{ fontSize: '26px' }}>
+              <span className="highlight-yellow">還沒開始打字</span>，系統就已經吃掉
+            </p>
+            <p style={{ fontSize: '32px', fontWeight: 700, color: 'var(--accent4)' }}>~30,000 – 40,000 tokens (15-20%)</p>
+          </div>
+          <div className="card" style={{ border: '1px solid var(--accent3)', padding: '16px 24px' }}>
+            <p style={{ fontSize: '26px' }}>
+              <span className="highlight-green">80% 的空間</span>被吃掉的是
+            </p>
+            <p style={{ fontSize: '32px', fontWeight: 700, color: 'var(--accent3)' }}>檔案讀取和工具輸出</p>
+            <p style={{ fontSize: '22px', color: 'var(--text-secondary)' }}>不是對話本身</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Step 2：漸進式退化 ===== */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>
+          <span className="highlight">漸進式退化 — Lost in the Middle</span>
+        </h3>
+
+        <div className="card" style={{ padding: '24px 32px', marginBottom: '20px' }}>
+          {degradationLevels.map((level, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: '16px',
+              padding: '12px 16px', marginBottom: '8px',
+              borderRadius: '12px',
+              background: i === 0 ? 'rgba(52, 211, 153, 0.08)' : 'transparent',
+              borderLeft: `4px solid ${level.color}`,
+            }}>
+              <span style={{ fontSize: '28px' }}>{level.emoji}</span>
+              <span style={{ fontSize: '26px', fontWeight: 700, width: '140px', color: level.color, flexShrink: 0 }}>{level.range}</span>
+              <span style={{ fontSize: '26px', fontWeight: 700, width: '140px', flexShrink: 0 }}>{level.label}</span>
+              <span style={{ fontSize: '24px', color: 'var(--text-secondary)' }}>{level.desc}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="card" style={{ padding: '20px 32px', border: '1px solid var(--accent4)' }}>
+          <p style={{ fontSize: '26px', marginBottom: '12px', fontWeight: 700, color: 'var(--accent4)' }}>
+            「中間遺忘」視覺化
+          </p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '8px' }}>
+            {middleLostBlocks.map((block, i) => (
+              <div key={i} style={{
+                width: '60px', height: '60px',
+                borderRadius: '12px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '28px',
+                background: block === '✅' ? 'rgba(52, 211, 153, 0.2)' : 'rgba(248, 113, 113, 0.2)',
+                border: `2px solid ${block === '✅' ? 'var(--accent3)' : 'var(--danger)'}`,
+              }}>
+                {block}
+              </div>
+            ))}
+          </div>
+          <p style={{ textAlign: 'center', fontSize: '22px', color: 'var(--text-secondary)' }}>
+            記得開頭 ✅ → <span style={{ color: 'var(--danger)' }}>忘記中間 ❌</span> → 記得結尾 ✅
+          </p>
+        </div>
+      </div>
+
+      {/* ===== Step 3：管理工具 + Auto-Compaction ===== */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>
+          <span className="highlight">管理工具 + Auto-Compaction</span>
+        </h3>
+
+        {/* 3 個核心指令卡片 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+          {commands.map((c, i) => (
+            <div key={i} className="card" style={{ borderTop: `4px solid ${c.color}`, padding: '20px 24px', textAlign: 'center' }}>
+              <p style={{ fontSize: '30px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: c.color, marginBottom: '8px' }}>{c.cmd}</p>
+              <p style={{ fontSize: '26px', fontWeight: 700, marginBottom: '4px' }}>{c.desc}</p>
+              <p style={{ fontSize: '22px', color: 'var(--text-secondary)' }}>{c.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Auto-Compaction 流程 */}
+        <div className="card" style={{ padding: '20px 32px', marginBottom: '16px' }}>
+          <p style={{ fontSize: '26px', fontWeight: 700, marginBottom: '16px' }}>Auto-Compaction 流程</p>
+          <div className="flow-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {compactionFlow.map((node, i) => (
+              <React.Fragment key={i}>
+                <div className="flow-box visible" style={{
+                  background: node.bg, color: '#fff', fontWeight: 700,
+                  padding: '12px 18px', borderRadius: '12px', fontSize: '22px',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {node.text}
+                </div>
+                {i < compactionFlow.length - 1 && (
+                  <span style={{ fontSize: '28px', color: 'var(--text-dim)' }}>→</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* 兩欄對比 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="card" style={{ border: '1px solid var(--accent3)', padding: '16px 24px' }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: 'var(--accent3)', marginBottom: '8px' }}>✅ 壓縮保留</p>
+            {['架構決策', '檔案路徑', '錯誤資訊', '程式碼慣例'].map((item, i) => (
+              <p key={i} style={{ fontSize: '24px', marginBottom: '4px' }}>• {item}</p>
+            ))}
+          </div>
+          <div className="card" style={{ border: '1px solid var(--danger)', padding: '16px 24px' }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: 'var(--danger)', marginBottom: '8px' }}>❌ 壓縮可能丟失</p>
+            {['精確行號', '中間程式碼', 'Debug 過程', '冗長工具輸出'].map((item, i) => (
+              <p key={i} style={{ fontSize: '24px', marginBottom: '4px' }}>• {item}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Step 4：1M Context Window ===== */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>
+          <span className="highlight-pink">1M Context Window</span> — 新時代
+        </h3>
+
+        <div className="card" style={{ border: '1px solid var(--accent2)', padding: '24px 32px', marginBottom: '20px' }}>
+          <p style={{ fontSize: '28px', marginBottom: '12px' }}>
+            Opus 4.6 + Sonnet 4.6 已支援 <span className="highlight-pink" style={{ fontSize: '36px' }}>1,000,000 tokens</span>（5 倍擴增）
+          </p>
+          <p style={{ fontSize: '26px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            Max / Team / Enterprise 方案 Opus 預設啟用
+          </p>
+          <p style={{ fontSize: '26px' }}>
+            設定方式：model ID 加 <code style={{ fontSize: '26px', background: 'var(--bg-primary)', padding: '4px 12px', borderRadius: '8px', color: 'var(--accent2)' }}>[1m]</code>（如 <code style={{ fontSize: '24px', background: 'var(--bg-primary)', padding: '4px 12px', borderRadius: '8px', color: 'var(--accent)' }}>claude-opus-4-6[1m]</code>）
+          </p>
+        </div>
+
+        {/* 200K vs 1M 對比長條 */}
+        <div className="card" style={{ padding: '24px 32px', marginBottom: '20px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '24px', width: '80px', textAlign: 'right', color: 'var(--text-secondary)' }}>200K</span>
+              <div style={{ flex: 1, background: 'var(--bg-primary)', borderRadius: '8px', height: '40px', overflow: 'hidden' }}>
+                <div style={{ width: '20%', height: '100%', background: 'var(--accent)', borderRadius: '8px', transition: 'width 1s ease' }}></div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '24px', width: '80px', textAlign: 'right', color: 'var(--accent2)', fontWeight: 700 }}>1M</span>
+              <div style={{ flex: 1, background: 'var(--bg-primary)', borderRadius: '8px', height: '40px', overflow: 'hidden' }}>
+                <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, var(--accent2), var(--accent))', borderRadius: '8px', transition: 'width 1s ease' }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 好處 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+          {[
+            { icon: '📚', text: '更大程式庫\n一次載入' },
+            { icon: '⏳', text: '更長工作階段\n減少中斷' },
+            { icon: '🔄', text: '減少 compaction\n保留更多細節' },
+          ].map((item, i) => (
+            <div key={i} className="card" style={{ textAlign: 'center', padding: '20px 16px' }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{item.icon}</p>
+              <p style={{ fontSize: '24px', whiteSpace: 'pre-line' }}>{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Step 5：展示影片 ===== */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight">Context Window 管理示範</span>
+        </h3>
+        {youtubeBlock('Q8hNVk-MDkM', '點擊播放 — Context Window 管理示範')}
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDES CONFIG
    ================================================================== */
 const SLIDES = [
@@ -2173,6 +2518,7 @@ const SLIDES = [
   { component: SlidePlugin, totalSteps: 3, title: 'Plugin 生態系' },
   { component: SlideSectionAdvanced, totalSteps: 0, title: '高階功能' },
   { component: SlideLSP, totalSteps: 5, title: 'Language Server Protocol' },
+  { component: SlideContextWindow, totalSteps: 5, title: 'Context Window' },
 ];
 
 /* ==================================================================
