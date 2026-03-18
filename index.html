@@ -2191,6 +2191,378 @@ toolSearchDeferred: false     # 特定 server 永遠預載`}</pre>
 }
 
 /* ==================================================================
+   SLIDE: Skills & Skill Creator
+   ================================================================== */
+function SlideSkill({ step }) {
+  // Step 0: 對比對話
+  const withoutSkill = [
+    { speaker: 'You', text: '幫我寫這個功能的技術規格書' },
+    { speaker: 'Claude', text: '好的！（隨意寫一段描述）' },
+    { speaker: 'You', text: '不對，要有背景/方案/風險/時程...' },
+    { speaker: 'Next day', text: '（又忘了你要的模板）' },
+  ];
+  const withSkill = [
+    { speaker: 'You', text: '/tech-spec 用戶驗證模組重構' },
+    { speaker: 'Claude', text: '✅ 自動套用團隊的規格書模板' },
+  ];
+
+  // Step 1: 結構三部分
+  const structureParts = [
+    { icon: '🏷️', name: 'YAML Frontmatter', desc: 'name, description, user-invocable, allowed-tools', color: 'var(--accent)' },
+    { icon: '📝', name: 'Markdown Body', desc: '實際指令 — Claude 遵循的操作手冊', color: 'var(--accent3)' },
+    { icon: '📦', name: 'Optional Attachments', desc: 'scripts/, references/, assets/', color: '#c084fc' },
+  ];
+
+  // Step 2: 漸進式載入
+  const loadLevels = [
+    { emoji: '👁️', label: 'Level 1: Name + Description', tokens: '~100 tokens', desc: '永遠在記憶中 — Claude 掃描判斷是否相關', color: 'var(--accent3)' },
+    { emoji: '📖', label: 'Level 2: SKILL.md 全文', tokens: '<5K tokens', desc: '觸發時才載入 — 完整指令', color: 'var(--accent)' },
+    { emoji: '📦', label: 'Level 3: 附加資源', tokens: '按需', desc: '需要時才讀 — 腳本、模板、參考文件', color: '#c084fc' },
+  ];
+
+  // Step 3: 六大能力
+  const abilities = [
+    { icon: '📏', title: '程式碼規範', example: '強制顯式回傳型別' },
+    { icon: '🔄', title: '工作流程自動化', example: '測試 → lint → commit' },
+    { icon: '🧠', title: '領域知識注入', example: '公司 API 規範、錯誤碼' },
+    { icon: '🚀', title: '部署與維運', example: 'E2E → staging → prod' },
+    { icon: '🔍', title: '程式碼審查', example: '安全漏洞 + 效能瓶頸' },
+    { icon: '📝', title: '文件產生', example: '函式簽名 → JSDoc' },
+  ];
+
+  // Step 4: 三大機制比較
+  const mechanisms = [
+    { name: 'CLAUDE.md', icon: '📋', nature: '確定性', desc: '每次 Session 自動讀取', analogy: '入職手冊', color: 'var(--accent)' },
+    { name: 'Skills', icon: '🧩', nature: '機率性', desc: 'Claude 判斷相關時才載入', analogy: '專業手冊', color: 'var(--accent2)' },
+    { name: 'Hooks', icon: '🪝', nature: '確定性', desc: '生命週期事件觸發 shell 腳本', analogy: '自動化流程', color: 'var(--accent3)' },
+  ];
+
+  // Step 4: 撰寫哲學
+  const philosophy = [
+    '說明「為什麼」而非「你必須」— LLM 理解原因後適應力更強',
+    '通則化 > 過度擬合 — 避免只為 2-3 個測試案例硬編碼',
+    '保持精簡 — SKILL.md < 500 行，細節放 references/',
+  ];
+
+  // Step 5: Skill Creator 流程
+  const creatorFlow = [
+    { text: '釐清需求', color: 'var(--accent)' },
+    { text: '寫 SKILL.md', color: 'var(--accent2)' },
+    { text: '跑測試', color: 'var(--accent4)' },
+    { text: '評估結果', color: 'var(--accent3)' },
+    { text: '改善', color: '#c084fc' },
+  ];
+
+  // Step 5: 四個 Agent
+  const agents = [
+    { icon: '🤖', name: 'Executor', desc: '執行測試案例' },
+    { icon: '📊', name: 'Grader', desc: '打分評估品質' },
+    { icon: '⚖️', name: 'Comparator', desc: '盲比較 A/B 版本' },
+    { icon: '🔬', name: 'Analyzer', desc: '統計分析彙整' },
+  ];
+
+  // Step 6: YouTube helper
+  const youtubeBlock = (videoId, label) => (
+    <a
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'block', textDecoration: 'none' }}
+    >
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        background: '#000',
+        cursor: 'pointer',
+      }}>
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={label}
+          style={{
+            position: 'absolute',
+            top: 0, left: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80px', height: '80px',
+          background: 'rgba(255,0,0,0.85)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 0, height: 0,
+            borderTop: '18px solid transparent',
+            borderBottom: '18px solid transparent',
+            borderLeft: '30px solid #fff',
+            marginLeft: '6px',
+          }}></div>
+        </div>
+      </div>
+      <p style={{ textAlign: 'center', marginTop: '12px', color: 'var(--text-secondary)', fontSize: '24px' }}>
+        {label}
+      </p>
+    </a>
+  );
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">Skills — 給 Claude 的專業能力包</h2>
+      <p className="animate-in delay-1" style={{ color: 'var(--text-secondary)', fontSize: '28px', marginBottom: '24px' }}>
+        模組化、可重用的客製能力 — 像食譜之於廚師
+      </p>
+
+      {/* ===== Step 0：Skill 是什麼？ ===== */}
+      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginTop: '16px' }}>
+        <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--danger)' }}>
+          <h3 style={{ color: 'var(--danger)', marginBottom: '16px' }}>❌ 沒有 Skill</h3>
+          <div style={{
+            background: 'rgba(0,0,0,0.4)', borderRadius: '12px', padding: '20px',
+            fontFamily: 'var(--font-mono)', fontSize: '22px', lineHeight: 1.8,
+          }}>
+            {withoutSkill.map((line, i) => (
+              <div key={i}>
+                <span style={{ color: line.speaker === 'You' ? 'var(--text-secondary)' : line.speaker === 'Claude' ? 'var(--accent)' : 'var(--accent4)' }}>
+                  {line.speaker === 'Next day' ? '⏰ ' : ''}{line.speaker}: {line.text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--accent3)' }}>
+          <h3 style={{ color: 'var(--accent3)', marginBottom: '16px' }}>✅ 有 Skill</h3>
+          <div style={{
+            background: 'rgba(0,0,0,0.4)', borderRadius: '12px', padding: '20px',
+            fontFamily: 'var(--font-mono)', fontSize: '22px', lineHeight: 1.8,
+          }}>
+            {withSkill.map((line, i) => (
+              <div key={i}>
+                <span style={{ color: line.speaker === 'You' ? 'var(--text-secondary)' : 'var(--accent)' }}>
+                  {line.speaker}: {line.text}
+                </span>
+              </div>
+            ))}
+            <span style={{ color: 'var(--accent3)', fontWeight: 700 }}>一次定義，永久生效！</span>
+          </div>
+        </div>
+      </div>
+      <div className="card card-accent" style={{ marginTop: '16px' }}>
+        <p style={{ marginBottom: '0', fontSize: '26px' }}>
+          🍳 Claude 已經是天才廚師，<span className="highlight">Skill</span> 讓他學會<span className="highlight-pink">「你的」</span>拿手菜
+        </p>
+      </div>
+
+      {/* ===== Step 1：SKILL.md 結構 ===== */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight">SKILL.md 結構</span>
+        </h3>
+        <pre style={{
+          background: 'rgba(0,0,0,0.5)', borderRadius: '16px', padding: '28px',
+          fontSize: '20px', fontFamily: 'var(--font-mono)', lineHeight: 1.7,
+          overflowX: 'auto', color: 'var(--text-primary)',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}>{`---
+name: tech-spec
+description: "用團隊模板撰寫技術規格書"
+user-invocable: true
+allowed-tools: ["Read", "Grep", "Glob"]
+---
+
+# Tech Spec Skill
+
+## 輸出模板
+1. 📋 背景與目標（為什麼要做）
+2. 🔧 技術方案（怎麼做）
+3. ⚠️ 風險評估（可能出什麼問題）
+4. 📅 時程估算（里程碑）
+
+## 撰寫原則
+- 讓 PM 也看得懂，避免過深的技術術語
+- 方案至少列出 2 個選項並比較優劣
+- 風險必須附帶緩解措施`}</pre>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '16px', marginTop: '20px',
+        }}>
+          {structureParts.map((part, i) => (
+            <div key={i} className="card" style={{ borderTop: `4px solid ${part.color}`, textAlign: 'center', padding: '20px' }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{part.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '26px', color: part.color, marginBottom: '8px' }}>{part.name}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '22px', marginBottom: '0' }}>{part.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+          <span style={{
+            background: 'rgba(56,189,248,0.15)', color: 'var(--accent)',
+            padding: '8px 20px', borderRadius: '20px', fontSize: '22px', fontWeight: 700,
+          }}>~/.claude/skills/ — 全域</span>
+          <span style={{
+            background: 'rgba(244,114,182,0.15)', color: 'var(--accent2)',
+            padding: '8px 20px', borderRadius: '20px', fontSize: '22px', fontWeight: 700,
+          }}>.claude/skills/ — 專案</span>
+        </div>
+      </div>
+
+      {/* ===== Step 2：三層漸進式載入 ===== */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-green">三層漸進式載入</span>
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+          {loadLevels.map((lv, i) => (
+            <React.Fragment key={i}>
+              <div style={{
+                background: 'var(--bg-card)', borderRadius: '14px', padding: '20px 32px',
+                width: '100%', maxWidth: '800px', borderLeft: `5px solid ${lv.color}`,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <div>
+                  <p style={{ fontSize: '26px', fontWeight: 700, color: lv.color, marginBottom: '4px' }}>
+                    {lv.emoji} {lv.label}
+                  </p>
+                  <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '0' }}>{lv.desc}</p>
+                </div>
+                <span style={{
+                  background: `${lv.color}22`, color: lv.color,
+                  padding: '4px 14px', borderRadius: '20px', fontSize: '20px', fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}>{lv.tokens}</span>
+              </div>
+              {i < loadLevels.length - 1 && (
+                <div style={{ fontSize: '32px', color: 'var(--text-dim)', padding: '4px 0' }}>↓</div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="card card-accent" style={{ marginTop: '16px' }}>
+          <p style={{ marginBottom: '0', fontSize: '26px' }}>
+            💡 <span className="highlight-yellow">description</span> 是最關鍵的部分 — 它決定你的 Skill <span className="highlight">何時被觸發</span>
+          </p>
+        </div>
+      </div>
+
+      {/* ===== Step 3：觸發方式 + 六大能力 ===== */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight">六大應用場景</span>
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {abilities.map((a, i) => (
+            <div key={i} className="card" style={{ textAlign: 'center', padding: '20px' }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{a.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '26px', marginBottom: '6px' }}>{a.title}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '22px', marginBottom: '0' }}>{a.example}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Step 4：三大機制比較 ===== */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-yellow">Skill vs CLAUDE.md vs Hooks</span>
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          {mechanisms.map((m, i) => (
+            <div key={i} className="card" style={{ borderTop: `4px solid ${m.color}`, textAlign: 'center', padding: '24px' }}>
+              <p style={{ fontSize: '48px', marginBottom: '8px' }}>{m.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '28px', color: m.color, marginBottom: '8px' }}>{m.name}</p>
+              <span style={{
+                background: `${m.color}22`, color: m.color,
+                padding: '4px 14px', borderRadius: '20px', fontSize: '20px', fontWeight: 700,
+              }}>{m.nature}</span>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px', marginTop: '12px', marginBottom: '6px' }}>{m.desc}</p>
+              <p style={{ fontSize: '22px', color: 'var(--text-dim)', marginBottom: '0' }}>像「{m.analogy}」</p>
+            </div>
+          ))}
+        </div>
+        <div className="card card-accent" style={{ marginTop: '20px' }}>
+          <h3 style={{ color: 'var(--accent)', marginBottom: '12px', fontSize: '26px' }}>✍️ 撰寫哲學</h3>
+          <ul style={{ listStyle: 'none', padding: 0, marginBottom: '0' }}>
+            {philosophy.map((p, i) => (
+              <li key={i} style={{ fontSize: '24px', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+                <span style={{ color: 'var(--accent3)', marginRight: '8px' }}>✓</span> {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* ===== Step 5：Skill Creator ===== */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-pink">Skill Creator</span> — 製造 Skill 的 Skill
+        </h3>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: '0', flexWrap: 'wrap', marginBottom: '24px', position: 'relative',
+        }}>
+          {creatorFlow.map((node, i) => (
+            <React.Fragment key={i}>
+              <div className="flow-box visible" style={{
+                background: node.color, color: '#fff', fontWeight: 700,
+                padding: '14px 24px', borderRadius: '12px', fontSize: '24px',
+                textAlign: 'center', minWidth: '120px',
+              }}>
+                {node.text}
+              </div>
+              {i < creatorFlow.length - 1 && (
+                <span className="flow-arrow visible" style={{ fontSize: '28px', margin: '0 8px', color: 'var(--text-dim)' }}>→</span>
+              )}
+            </React.Fragment>
+          ))}
+          <div style={{
+            position: 'absolute', bottom: '-32px', right: '15%',
+            fontSize: '22px', color: 'var(--accent4)',
+          }}>
+            ↻ 持續循環直到品質達標
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '40px' }}>
+          {agents.map((a, i) => (
+            <div key={i} className="card" style={{ textAlign: 'center', padding: '20px' }}>
+              <p style={{ fontSize: '48px', marginBottom: '8px' }}>{a.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '26px', marginBottom: '6px', color: 'var(--text-primary)' }}>{a.name}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '22px', marginBottom: '0' }}>{a.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {['Create', 'Eval', 'Improve', 'Benchmark'].map((mode, i) => (
+            <span key={i} style={{
+              background: [
+                'var(--accent)', 'var(--accent3)', '#c084fc', 'var(--accent4)',
+              ][i],
+              color: 'var(--bg-primary)',
+              padding: '6px 20px', borderRadius: '20px', fontSize: '22px', fontWeight: 700,
+            }}>{mode}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Step 6：示範影片 ===== */}
+      <div className={`step-fade ${step >= 6 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-pink">Skills 示範</span>
+        </h3>
+        {youtubeBlock('9_MqZvf0nqA', '點擊播放 — Skills 示範影片')}
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDE: LSP (Language Server Protocol)
    ================================================================== */
 function SlideLSP({ step }) {
@@ -3489,6 +3861,7 @@ const SLIDES = [
   { component: SlideCLAUDEmd, totalSteps: 5, title: 'CLAUDE.md 專案指引' },
   { component: SlideMemory, totalSteps: 5, title: '記憶系統' },
   { component: SlideMCP, totalSteps: 6, title: 'MCP 協定' },
+  { component: SlideSkill, totalSteps: 6, title: 'Skills' },
 ];
 
 /* ==================================================================
