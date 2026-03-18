@@ -2502,6 +2502,480 @@ function SlideContextWindow({ step }) {
 }
 
 /* ==================================================================
+   SlideCLAUDEmd — CLAUDE.md 專案指引
+   ================================================================== */
+function SlideCLAUDEmd({ step }) {
+  const sixBlocks = [
+    { icon: '🏷️', title: 'Project Overview', desc: '2-3 句描述專案用途' },
+    { icon: '🔧', title: 'Tech Stack', desc: '框架 + 版本號！' },
+    { icon: '📁', title: 'Key Directories', desc: '只列關鍵目錄' },
+    { icon: '📐', title: 'Coding Standards', desc: '只寫 linter 管不到的' },
+    { icon: '⚡', title: 'Common Commands', desc: 'build / test / lint' },
+    { icon: '🚧', title: 'Behavior Rules', desc: '可做 / 要問 / 禁止' },
+  ];
+
+  const loadLevels = [
+    { label: '~/.claude/CLAUDE.md', desc: '全域偏好', extra: '<15 行', color: 'var(--accent2)' },
+    { label: '/project/CLAUDE.md', desc: '專案核心', extra: '60-80 行', color: 'var(--accent)' },
+    { label: '.claude/rules/*.md', desc: '自動載入規則', extra: '模組化', color: 'var(--accent3)' },
+    { label: 'src/backend/CLAUDE.md', desc: '子目錄（進入時載入）', extra: '按需', color: 'var(--accent4)' },
+    { label: '@docs/xxx.md', desc: '按需載入（Read When）✨', extra: '不消耗 context', color: '#c084fc' },
+  ];
+
+  const principles = [
+    '簡短 60-80 行，精準到位',
+    '只放通用規則，特殊的用 @reference',
+    '具體可執行，不寫空話',
+    '導航不內嵌，用 Read When 指向',
+    '標記關鍵規則（IMPORTANT / YOU MUST）',
+    '定期檢視，刪除過時指引',
+  ];
+
+  const pitfalls = [
+    '嵌入大量檔案內容（消耗 context）',
+    '模糊指示（"write clean code"）',
+    '貼上密碼或金鑰',
+    '重複 linter 已管控的規則',
+    '超過 200 行（遵從率均勻下降）',
+    '從不更新（內容過時）',
+  ];
+
+  return (
+    <div className="slide">
+      <h1 className="animate-in">CLAUDE.md — 專案指引</h1>
+      <p className="subtitle animate-in delay-1">為每天失憶的天才工程師寫的入職手冊</p>
+
+      {/* ===== Step 0：什麼是 CLAUDE.md？ ===== */}
+      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginTop: '16px' }}>
+        <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--danger)' }}>
+          <h3 style={{ color: 'var(--danger)', marginBottom: '16px' }}>❌ 沒有 CLAUDE.md</h3>
+          <div style={{
+            background: 'rgba(0,0,0,0.4)', borderRadius: '12px', padding: '20px',
+            fontFamily: 'var(--font-mono)', fontSize: '22px', lineHeight: 1.8,
+          }}>
+            <span style={{ color: 'var(--accent3)' }}>$</span> claude<br/>
+            <span style={{ color: 'var(--text-secondary)' }}>You: 幫我跑測試</span><br/>
+            <span style={{ color: 'var(--accent)' }}>Claude: 請問你用什麼測試框架？</span><br/>
+            <span style={{ color: 'var(--text-secondary)' }}>You: pytest，我跟你說過了...</span><br/>
+            <span style={{ color: 'var(--accent4)' }}>⏰ 第二天...</span><br/>
+            <span style={{ color: 'var(--accent)' }}>Claude: 請問你用什麼測試框架？</span><br/>
+            <span style={{ color: 'var(--danger)' }}>You: 😤😤😤</span>
+          </div>
+        </div>
+        <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--accent3)' }}>
+          <h3 style={{ color: 'var(--accent3)', marginBottom: '16px' }}>✅ 有 CLAUDE.md</h3>
+          <div style={{
+            background: 'rgba(0,0,0,0.4)', borderRadius: '12px', padding: '20px',
+            fontFamily: 'var(--font-mono)', fontSize: '22px', lineHeight: 1.8,
+          }}>
+            <span style={{ color: 'var(--accent3)' }}>$</span> claude<br/>
+            <span style={{ color: 'var(--text-dim)' }}>// 自動讀取 CLAUDE.md...</span><br/>
+            <span style={{ color: 'var(--text-secondary)' }}>You: 幫我跑測試</span><br/>
+            <span style={{ color: 'var(--accent)' }}>Claude: pytest -xvs 跑完了，3 個 pass ✅</span><br/>
+            <span style={{ color: 'var(--accent3)', fontWeight: 700 }}>直接開工，不再重複問！</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Step 1：注意力預算 ===== */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight">注意力預算（Attention Budget）</span>
+        </h3>
+        <div className="card">
+          <p style={{ marginBottom: '20px' }}>
+            LLM 可靠追蹤約 <span className="highlight" style={{ fontSize: '36px' }}>150-200</span> 條指令，System Prompt 已佔 ~50 條
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[
+              { label: 'System Prompt ~50 條', pct: '33%', color: 'var(--accent4)' },
+              { label: 'CLAUDE.md 目標 60-80 行', pct: '40%', color: 'var(--accent)' },
+              { label: '剩餘給對話 & 檔案', pct: '27%', color: 'var(--accent3)' },
+            ].map((bar, i) => (
+              <div key={i}>
+                <p style={{ fontSize: '24px', marginBottom: '6px', color: 'var(--text-secondary)' }}>{bar.label}</p>
+                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '10px', height: '36px', overflow: 'hidden' }}>
+                  <div style={{
+                    width: bar.pct, height: '100%', background: bar.color,
+                    borderRadius: '10px', transition: 'width 0.8s ease',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, fontSize: '20px', color: 'var(--bg-primary)',
+                  }}>{bar.pct}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="card" style={{ marginTop: '20px', borderLeft: '5px solid var(--accent4)', background: 'rgba(251,191,36,0.08)' }}>
+            <p style={{ color: 'var(--accent4)', fontWeight: 700, marginBottom: '0' }}>
+              ⚠️ 超過 200 行 → 所有規則的遵從率均勻下降（不是只忽略後面的）
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Step 2：六大核心區塊 ===== */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-pink">六大核心區塊</span>
+        </h3>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '20px',
+        }}>
+          {sixBlocks.map((b, i) => (
+            <div key={i} className="card" style={{ textAlign: 'center', padding: '24px' }}>
+              <p style={{ fontSize: '48px', marginBottom: '8px' }}>{b.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '28px', marginBottom: '8px', color: 'var(--text-primary)' }}>{b.title}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px', marginBottom: '0' }}>{b.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Step 3：完整範例 ===== */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-green">完整範例（~60 行濃縮版）</span>
+        </h3>
+        <pre style={{
+          background: 'rgba(0,0,0,0.5)', borderRadius: '16px', padding: '28px',
+          fontSize: '22px', fontFamily: 'var(--font-mono)', lineHeight: 1.7,
+          overflowX: 'auto', color: 'var(--text-primary)',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}>{`# ShopFront
+
+## Project Overview
+Next.js 14 e-commerce platform. Stripe payments + Prisma ORM.
+
+## Tech Stack
+- Next.js 14 (App Router), TypeScript 5.x (strict)
+- Prisma + PostgreSQL, Stripe SDK v14
+
+## Commands
+- npm run dev      → 開發伺服器
+- npm run test     → Jest 測試
+- npm run typecheck → 型別檢查
+
+## Behavior
+- IMPORTANT: 不要 commit .env 檔案
+- YOU MUST: commit 前跑 typecheck
+- 修改 DB schema 前先討論
+
+## Reference Documents
+### Payment — @docs/stripe-guide.md
+**Read when:** 修改付款 / 退款邏輯`}</pre>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
+          {['~60 行', '有版本號', 'IMPORTANT 標記', 'Read When 參考'].map((tag, i) => (
+            <span key={i} style={{
+              background: 'var(--accent)', color: 'var(--bg-primary)',
+              padding: '6px 16px', borderRadius: '20px', fontSize: '22px', fontWeight: 700,
+            }}>{tag}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Step 4：載入層級 + 漸進式揭露 ===== */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-yellow">載入層級 — 漸進式揭露</span>
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+          {loadLevels.map((lv, i) => (
+            <React.Fragment key={i}>
+              <div style={{
+                background: 'var(--bg-card)', borderRadius: '14px', padding: '20px 32px',
+                width: '100%', maxWidth: '800px', borderLeft: `5px solid ${lv.color}`,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <div>
+                  <code style={{ fontSize: '24px', color: lv.color }}>{lv.label}</code>
+                  <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '0', marginTop: '4px' }}>{lv.desc}</p>
+                </div>
+                <span style={{
+                  background: `${lv.color}22`, color: lv.color,
+                  padding: '4px 14px', borderRadius: '20px', fontSize: '20px', fontWeight: 700,
+                }}>{lv.extra}</span>
+              </div>
+              {i < loadLevels.length - 1 && (
+                <div style={{ fontSize: '32px', color: 'var(--text-dim)', padding: '4px 0' }}>↓</div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="card card-accent" style={{ marginTop: '20px' }}>
+          <p style={{ marginBottom: '0' }}>
+            💡 不要把所有東西塞進去 — 用 <span className="highlight">@references</span> + <span className="highlight-yellow">Read When</span>，Claude 只載入當前任務需要的
+          </p>
+        </div>
+      </div>
+
+      {/* ===== Step 5：六大原則 & 常見地雷 ===== */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight">撰寫原則</span> vs <span className="highlight-pink">常見地雷</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+          <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--accent3)' }}>
+            <h3 style={{ color: 'var(--accent3)', marginBottom: '16px' }}>✅ 六大原則</h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {principles.map((p, i) => (
+                <li key={i} style={{ fontSize: '26px', marginBottom: '10px', color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--accent3)', marginRight: '8px' }}>✓</span> {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--danger)' }}>
+            <h3 style={{ color: 'var(--danger)', marginBottom: '16px' }}>💣 常見地雷</h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {pitfalls.map((p, i) => (
+                <li key={i} style={{ fontSize: '26px', marginBottom: '10px', color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--danger)', marginRight: '8px' }}>✗</span> {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="card" style={{ marginTop: '20px', textAlign: 'center', background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.2)' }}>
+          <p style={{ marginBottom: '0', fontSize: '28px' }}>
+            💡 <code>/init</code> 指令可自動生成起始 CLAUDE.md
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
+   SlideMemory — 記憶系統
+   ================================================================== */
+function SlideMemory({ step }) {
+  const memoryTypes = [
+    { icon: '🟢', label: '# quick command', desc: '在對話中輸入 # always use pnpm', target: '→ 寫入 CLAUDE.md', color: 'var(--accent3)' },
+    { icon: '🔵', label: '自然語言', desc: '「Remember, API tests need Redis」', target: '→ 寫入 Auto Memory', color: 'var(--accent)' },
+    { icon: '🟣', label: '/memory 指令', desc: '列出所有記憶、開關、開資料夾', target: '→ 管理介面', color: '#c084fc' },
+    { icon: '🟠', label: '直接編輯檔案', desc: 'vim CLAUDE.md 手動寫入', target: '→ 完全掌控', color: 'var(--accent4)' },
+  ];
+
+  const willRemember = [
+    'Build 指令與環境設定',
+    'Debug 過程中的洞見',
+    '架構決策與原因',
+    '程式碼風格偏好',
+    '工作流程與慣例',
+  ];
+
+  const wontRemember = [
+    '閒聊與無關內容',
+    '密碼 / API 金鑰',
+    '瑣碎一次性細節',
+    'CLAUDE.md 已有的內容',
+    '一次性的除錯問題',
+  ];
+
+  const flowSteps = [
+    { text: '開始 Session', color: 'var(--accent)' },
+    { text: 'Claude 讀取筆記', color: 'var(--accent4)' },
+    { text: '協作工作', color: 'var(--accent3)' },
+    { text: 'Claude 儲存洞見', color: '#c084fc' },
+    { text: '下次 Session 受益', color: 'var(--accent2)' },
+  ];
+
+  return (
+    <div className="slide">
+      <h1 className="animate-in">記憶系統</h1>
+      <p className="subtitle animate-in delay-1">讓 Claude 跨 Session 記住你 — 解決「我跟你說過了！」的問題</p>
+
+      {/* ===== Step 0：問題 — 每次都失憶 ===== */}
+      <div className="card" style={{ marginTop: '16px', borderLeft: '5px solid var(--accent4)' }}>
+        <div style={{
+          background: 'rgba(0,0,0,0.4)', borderRadius: '12px', padding: '24px',
+          fontFamily: 'var(--font-mono)', fontSize: '22px', lineHeight: 2,
+        }}>
+          <span style={{ color: 'var(--accent4)' }}>Day 1:</span> You: run tests → <span style={{ color: 'var(--accent)' }}>Claude: What framework?</span> → You: pytest!<br/>
+          <span style={{ color: 'var(--accent4)' }}>Day 2:</span> You: run tests → <span style={{ color: 'var(--accent)' }}>Claude: What framework?</span> → You: ...😤<br/>
+          <span style={{ color: 'var(--accent4)' }}>Day 3:</span> You: run tests → <span style={{ color: 'var(--accent)' }}>Claude: What framework?</span> → You: 🤬🤬🤬
+        </div>
+        <p style={{ marginTop: '16px', marginBottom: '0', color: 'var(--text-secondary)', textAlign: 'center' }}>
+          每次開新 Session，Claude 的「大腦」都是全新空白 — 昨天教的全部忘光
+        </p>
+      </div>
+
+      {/* ===== Step 1：兩大組件 ===== */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '8px' }}>
+          <span className="highlight">兩大組件</span>
+          <span style={{ fontSize: '24px', color: 'var(--text-dim)', marginLeft: '16px' }}>天才助理 + 每日失憶症的解法</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginTop: '16px' }}>
+          <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--accent)' }}>
+            <p style={{ fontSize: '40px', marginBottom: '8px' }}>📋</p>
+            <h3 style={{ color: 'var(--accent)', marginBottom: '8px' }}>CLAUDE.md</h3>
+            <p style={{ fontSize: '26px', color: 'var(--accent4)', fontWeight: 700, marginBottom: '8px' }}>「你留在桌上的便利貼」</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '24px', marginBottom: '0' }}>
+              ✍️ <span className="highlight">你寫、你控制</span> — 專案規則、技術棧、指令、行為規範
+            </p>
+          </div>
+          <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid #c084fc' }}>
+            <p style={{ fontSize: '40px', marginBottom: '8px' }}>🧠</p>
+            <h3 style={{ color: '#c084fc', marginBottom: '8px' }}>Auto Memory</h3>
+            <p style={{ fontSize: '26px', color: 'var(--accent4)', fontWeight: 700, marginBottom: '8px' }}>「Claude 的工作筆記本」</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '24px', marginBottom: '0' }}>
+              🤖 <span style={{ color: '#c084fc', fontWeight: 700 }}>Claude 寫、你可編輯</span> — build 洞見、偏好、架構筆記
+            </p>
+          </div>
+        </div>
+        <div className="card" style={{ marginTop: '16px', background: 'rgba(251,191,36,0.08)', borderLeft: '5px solid var(--accent4)' }}>
+          <p style={{ color: 'var(--accent4)', marginBottom: '0', fontWeight: 700 }}>
+            ⚡ 關鍵觀念：不是真正的記憶 — 是每次 Session 開始時重新讀取所有筆記（像複製貼上）
+          </p>
+        </div>
+      </div>
+
+      {/* ===== Step 2：檔案在哪裡？ ===== */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-pink">檔案在哪裡？（三層結構）</span>
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+          {[
+            { icon: '🌍', title: 'Global', path: '~/.claude/CLAUDE.md', desc: '所有專案 — 個人偏好', color: 'var(--accent2)' },
+            { icon: '📦', title: 'Project', path: './CLAUDE.md', desc: '此專案 — 可 commit 分享給團隊', color: 'var(--accent)' },
+            { icon: '🧠', title: 'Auto Memory', path: '~/.claude/projects/<name>/memory/', desc: 'Claude 的筆記 — 每個專案獨立', color: '#c084fc' },
+          ].map((layer, i) => (
+            <React.Fragment key={i}>
+              <div style={{
+                background: 'var(--bg-card)', borderRadius: '14px', padding: '24px 32px',
+                width: '100%', maxWidth: '800px', borderLeft: `5px solid ${layer.color}`,
+                display: 'flex', alignItems: 'center', gap: '20px',
+              }}>
+                <span style={{ fontSize: '48px' }}>{layer.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 700, fontSize: '28px', color: layer.color, marginBottom: '4px' }}>{layer.title}</p>
+                  <code style={{ fontSize: '22px', color: 'var(--text-primary)' }}>{layer.path}</code>
+                  <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '0', marginTop: '4px' }}>{layer.desc}</p>
+                </div>
+              </div>
+              {i < 2 && (
+                <div style={{ fontSize: '28px', color: 'var(--text-dim)', padding: '6px 0' }}>↓ 繼承 + 覆蓋</div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <p style={{ fontSize: '24px', color: 'var(--text-dim)', marginTop: '16px', textAlign: 'center' }}>
+          📝 MEMORY.md 是索引檔，前 200 行載入，指向各主題記憶檔
+        </p>
+      </div>
+
+      {/* ===== Step 3：四種新增記憶方式 ===== */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-green">四種新增記憶方式</span>
+        </h3>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '20px',
+        }}>
+          {memoryTypes.map((m, i) => (
+            <div key={i} className="card" style={{ borderLeft: `5px solid ${m.color}`, padding: '24px' }}>
+              <p style={{ fontSize: '28px', fontWeight: 700, color: m.color, marginBottom: '8px' }}>
+                {m.icon} {m.label}
+              </p>
+              <div style={{
+                background: 'rgba(0,0,0,0.3)', borderRadius: '10px', padding: '12px 16px',
+                fontFamily: 'var(--font-mono)', fontSize: '20px', color: 'var(--text-primary)',
+                marginBottom: '8px',
+              }}>{m.desc}</div>
+              <p style={{ color: m.color, fontSize: '22px', fontWeight: 700, marginBottom: '0' }}>{m.target}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== Step 4：Auto Memory 的智慧 ===== */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight-yellow">Auto Memory 的智慧</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+          <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--accent3)' }}>
+            <h3 style={{ color: 'var(--accent3)', marginBottom: '16px' }}>✅ Claude 會記住</h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {willRemember.map((item, i) => (
+                <li key={i} style={{ fontSize: '26px', marginBottom: '10px', color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--accent3)', marginRight: '8px' }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="card" style={{ flex: '1 1 380px', borderLeft: '5px solid var(--danger)' }}>
+            <h3 style={{ color: 'var(--danger)', marginBottom: '16px' }}>❌ Claude 不會記住</h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {wontRemember.map((item, i) => (
+                <li key={i} style={{ fontSize: '26px', marginBottom: '10px', color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--danger)', marginRight: '8px' }}>✗</span> {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div style={{ marginTop: '20px' }}>
+          <p style={{ fontSize: '24px', color: 'var(--text-dim)', marginBottom: '8px' }}>Auto Memory 檔案格式：</p>
+          <pre style={{
+            background: 'rgba(0,0,0,0.5)', borderRadius: '12px', padding: '20px',
+            fontSize: '22px', fontFamily: 'var(--font-mono)', lineHeight: 1.7,
+            color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.1)',
+          }}>{`---
+name: build-commands
+description: Project build steps
+type: project
+---
+Must run codegen before build.
+Port 3000 is often occupied, use 3001.`}</pre>
+        </div>
+      </div>
+
+      {/* ===== Step 5：日常工作流總結 ===== */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>
+          <span className="highlight">日常工作流</span>
+        </h3>
+        <div className="flow-container" style={{ gap: '0', marginBottom: '24px' }}>
+          {flowSteps.map((fs, i) => (
+            <React.Fragment key={i}>
+              <div className="flow-box visible" style={{
+                background: fs.color, color: 'var(--bg-primary)',
+                fontSize: '22px', padding: '16px 20px', minWidth: '140px',
+              }}>{fs.text}</div>
+              {i < flowSteps.length - 1 && (
+                <span className="flow-arrow visible" style={{ fontSize: '32px' }}>→</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+          <div className="card card-accent" style={{ flex: '1 1 300px' }}>
+            <p style={{ marginBottom: '0', fontSize: '26px' }}>
+              📋 <span className="highlight">CLAUDE.md</span> = 你精選的精華（60-80 行）
+            </p>
+          </div>
+          <div className="card" style={{ flex: '1 1 300px', borderLeft: '5px solid #c084fc' }}>
+            <p style={{ marginBottom: '0', fontSize: '26px' }}>
+              🧠 <span style={{ color: '#c084fc', fontWeight: 700 }}>Auto Memory</span> = Claude 處理剩餘的
+            </p>
+          </div>
+          <div className="card" style={{ flex: '1 1 300px', borderLeft: '5px solid var(--accent3)' }}>
+            <p style={{ marginBottom: '0', fontSize: '26px' }}>
+              🔄 定期檢視：<code>claude 'Review my memory files'</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDES CONFIG
    ================================================================== */
 const SLIDES = [
@@ -2519,6 +2993,8 @@ const SLIDES = [
   { component: SlideSectionAdvanced, totalSteps: 0, title: '高階功能' },
   { component: SlideLSP, totalSteps: 5, title: 'Language Server Protocol' },
   { component: SlideContextWindow, totalSteps: 5, title: 'Context Window' },
+  { component: SlideCLAUDEmd, totalSteps: 5, title: 'CLAUDE.md 專案指引' },
+  { component: SlideMemory, totalSteps: 5, title: '記憶系統' },
 ];
 
 /* ==================================================================
