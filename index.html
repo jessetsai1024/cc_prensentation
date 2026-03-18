@@ -1759,26 +1759,18 @@ function SlidePlugin({ step }) {
    SLIDE: LSP (Language Server Protocol)
    ================================================================== */
 function SlideLSP({ step }) {
-  const lspTools = [
-    { icon: '🎯', name: 'goToDefinition', desc: '跳到函式/變數的定義位置' },
-    { icon: '🔍', name: 'findReferences', desc: '找出所有引用該符號的位置' },
-    { icon: '💬', name: 'hover', desc: '顯示型別資訊與文件說明' },
-    { icon: '📄', name: 'documentSymbol', desc: '檔案結構總覽（函式/類別清單）' },
-    { icon: '🌐', name: 'workspaceSymbol', desc: '全專案符號搜尋' },
-  ];
-
   const languages = [
-    { name: 'Python', server: 'Pyright', color: '#3776AB' },
-    { name: 'TypeScript', server: 'vtsls', color: '#3178C6' },
-    { name: 'Go', server: 'gopls', color: '#00ADD8' },
-    { name: 'Rust', server: 'rust-analyzer', color: '#CE422B' },
-    { name: 'Java', server: 'jdtls', color: '#ED8B00' },
-    { name: 'C/C++', server: 'clangd', color: '#00599C' },
-    { name: 'C#', server: 'OmniSharp', color: '#68217A' },
-    { name: 'PHP', server: 'Intelephense', color: '#777BB4' },
-    { name: 'Kotlin', server: 'kotlin-ls', color: '#7F52FF' },
-    { name: 'Ruby', server: 'Solargraph', color: '#CC342D' },
-    { name: 'HTML/CSS', server: 'vscode-html', color: '#E34F26' },
+    { name: 'Python', color: '#3776AB' },
+    { name: 'TypeScript', color: '#3178C6' },
+    { name: 'Go', color: '#00ADD8' },
+    { name: 'Rust', color: '#CE422B' },
+    { name: 'Java', color: '#ED8B00' },
+    { name: 'C/C++', color: '#00599C' },
+    { name: 'C#', color: '#68217A' },
+    { name: 'PHP', color: '#777BB4' },
+    { name: 'Kotlin', color: '#7F52FF' },
+    { name: 'Ruby', color: '#CC342D' },
+    { name: 'HTML/CSS', color: '#E34F26' },
   ];
 
   const youtubeBlock = (videoId, label) => (
@@ -1833,321 +1825,328 @@ function SlideLSP({ step }) {
     </a>
   );
 
+  const workflowSteps = [
+    { role: '你：', text: '「把 createUser 加一個 email 參數」', color: 'var(--text-primary)' },
+    { role: 'Claude：', text: 'LSP → goToDefinition("createUser")', color: 'var(--accent)' },
+    { role: '伺服器：', text: '→ src/user.ts:28 行', color: 'var(--accent3)' },
+    { role: 'Claude：', text: '✏️ 修改第 28 行', color: 'var(--accent)' },
+    { role: '伺服器：', text: '⚠ 3 個錯誤 — 呼叫處缺少 email ← 自動觸發！', color: 'var(--accent4)' },
+    { role: 'Claude：', text: 'LSP → findReferences("createUser")', color: 'var(--accent)' },
+    { role: '伺服器：', text: '→ cart.ts:15, api.ts:42, test.ts:7', color: 'var(--accent3)' },
+    { role: 'Claude：', text: '✅ 修好全部 3 處 → 零錯誤！', color: 'var(--accent)' },
+  ];
+
   return (
     <div className="slide">
-      <h2 className="animate-in">Language Server Protocol</h2>
+      <h2 className="animate-in">LSP — AI 的圖書館員</h2>
       <p className="animate-in delay-1" style={{ color: 'var(--text-secondary)', fontSize: '28px', marginBottom: '24px' }}>
-        讓 AI 擁有 IDE 級的語義理解能力
+        讓 Claude Code 從「文字搜尋」升級為「語義理解」
       </p>
 
-      {/* Step 0: M×N 問題示意 */}
-      <div style={{ display: 'flex', gap: '40px', alignItems: 'center', justifyContent: 'center', margin: '16px 0 24px' }}>
-        {/* 左：M×N 混亂連線 */}
-        <div style={{ flex: '1', maxWidth: '420px' }}>
-          <p style={{ textAlign: 'center', fontSize: '28px', fontWeight: 700, marginBottom: '16px', color: 'var(--danger)' }}>
-            傳統：M × N 整合
+      {/* Step 0: grep vs LSP 對比 — 圖書館比喻 */}
+      <div style={{ display: 'flex', gap: '24px', margin: '0 0 24px' }}>
+        {/* 左卡：沒有 LSP */}
+        <div className="card" style={{
+          flex: 1,
+          borderLeft: '4px solid var(--danger)',
+          padding: '24px',
+        }}>
+          <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--danger)', marginBottom: '16px' }}>
+            沒有 LSP = 自己翻書
           </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {['Python', 'TypeScript', 'Go', 'Rust'].map((lang, i) => (
-                <div key={i} style={{
-                  background: 'var(--bg-card)',
-                  padding: '10px 20px',
-                  borderRadius: '10px',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  textAlign: 'center',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}>{lang}</div>
-              ))}
-            </div>
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '60px',
-              color: 'var(--danger)',
-              opacity: 0.6,
-              padding: '0 8px',
-            }}>
-              ✕
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {['VS Code', 'Vim', 'Emacs', 'Claude'].map((editor, i) => (
-                <div key={i} style={{
-                  background: 'var(--bg-card)',
-                  padding: '10px 20px',
-                  borderRadius: '10px',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  textAlign: 'center',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}>{editor}</div>
-              ))}
-            </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '16px',
+            fontSize: '36px',
+          }}>
+            <span>🧑‍💻</span>
+            <span style={{ color: 'var(--text-dim)' }}>→</span>
+            <span>📚📚📚📚</span>
+            <span style={{ color: 'var(--text-dim)' }}>→</span>
+            <span>😵‍💫</span>
           </div>
-          <p style={{ textAlign: 'center', fontSize: '26px', marginTop: '12px', color: 'var(--danger)' }}>
-            4 × 4 = <span style={{ fontWeight: 900, fontSize: '30px' }}>16</span> 個整合
-          </p>
+          <div style={{
+            background: '#1a1a2e',
+            borderRadius: '10px',
+            padding: '16px',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '24px',
+          }}>
+            <p style={{ color: 'var(--text-dim)', marginBottom: '4px' }}>$ grep -r "createUser" .</p>
+            <p style={{ color: 'var(--accent4)' }}>src/user.ts:28: function createUser(...</p>
+            <p style={{ color: 'var(--text-secondary)' }}>src/cart.ts:15: await createUser(...</p>
+            <p style={{ color: 'var(--text-secondary)' }}>src/api.ts:42: return createUser(...</p>
+            <p style={{ color: 'var(--text-dim)' }}>test/user.test.ts:7: createUser(...</p>
+            <p style={{ color: 'var(--text-dim)' }}>docs/api.md:12: # createUser</p>
+            <p style={{ color: 'var(--text-dim)' }}>... 還有 42 筆結果</p>
+            <p style={{ color: 'var(--danger)', marginTop: '8px', fontWeight: 700 }}>→ 47+ 結果，30-60 秒</p>
+          </div>
         </div>
 
-        {/* 中間箭頭 */}
-        <div style={{ fontSize: '48px', color: 'var(--accent)' }}>→</div>
-
-        {/* 右：M+N 透過 LSP */}
-        <div style={{ flex: '1', maxWidth: '480px' }}>
-          <p style={{ textAlign: 'center', fontSize: '28px', fontWeight: 700, marginBottom: '16px', color: 'var(--accent3)' }}>
-            LSP：M + N 整合
+        {/* 右卡：有 LSP */}
+        <div className="card" style={{
+          flex: 1,
+          borderLeft: '4px solid var(--accent3)',
+          padding: '24px',
+        }}>
+          <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--accent3)', marginBottom: '16px' }}>
+            有 LSP = 問圖書館員
           </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {['Python', 'TypeScript', 'Go', 'Rust'].map((lang, i) => (
-                <div key={i} style={{
-                  background: 'var(--bg-card)',
-                  padding: '10px 20px',
-                  borderRadius: '10px',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  textAlign: 'center',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}>{lang}</div>
-              ))}
-            </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '0 16px',
-            }}>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-            </div>
-            <div style={{
-              background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-              padding: '24px 20px',
-              borderRadius: '14px',
-              fontSize: '28px',
-              fontWeight: 900,
-              textAlign: 'center',
-              color: '#fff',
-              minWidth: '80px',
-              boxShadow: '0 0 30px var(--accent-glow)',
-            }}>
-              LSP
-            </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '0 16px',
-            }}>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '26px' }}>→</div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {['VS Code', 'Vim', 'Emacs', 'Claude'].map((editor, i) => (
-                <div key={i} style={{
-                  background: 'var(--bg-card)',
-                  padding: '10px 20px',
-                  borderRadius: '10px',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  textAlign: 'center',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}>{editor}</div>
-              ))}
-            </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '16px',
+            fontSize: '36px',
+          }}>
+            <span>🧑‍💻</span>
+            <span style={{ color: 'var(--text-dim)' }}>→</span>
+            <span>🧑‍🏫</span>
+            <span style={{ color: 'var(--text-dim)' }}>→</span>
+            <span>🎯</span>
           </div>
-          <p style={{ textAlign: 'center', fontSize: '26px', marginTop: '12px', color: 'var(--accent3)' }}>
-            4 + 4 = <span style={{ fontWeight: 900, fontSize: '30px' }}>8</span> 個整合
-          </p>
+          <div style={{
+            background: '#1a1a2e',
+            borderRadius: '10px',
+            padding: '16px',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '24px',
+          }}>
+            <p style={{ color: 'var(--text-dim)', marginBottom: '4px' }}>LSP → goToDefinition("createUser")</p>
+            <p style={{ color: 'var(--accent3)', fontWeight: 700 }}>→ src/user.ts:28:1</p>
+            <p style={{ color: 'var(--accent3)', fontWeight: 700 }}>  function createUser(name: string)</p>
+            <p style={{ color: 'var(--accent3)', marginTop: '24px', fontWeight: 700 }}>→ 1 個精確結果，~50ms</p>
+          </div>
         </div>
       </div>
 
-      {/* Step 1: LSP 架構說明 */}
+      {/* Step 1: 900x 效能提升 */}
       <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
         <h3 style={{ marginBottom: '16px' }}>
-          <span className="highlight">Client-Server 架構</span>
-        </h3>
-        <div className="card card-accent">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0', flexWrap: 'wrap', margin: '8px 0' }}>
-            <div style={{
-              background: 'var(--accent2)',
-              color: '#fff',
-              padding: '18px 28px',
-              borderRadius: '14px',
-              fontSize: '26px',
-              fontWeight: 700,
-              textAlign: 'center',
-            }}>
-              Editor / IDE<br/>
-              <span style={{ fontSize: '24px', opacity: 0.8 }}>（Client）</span>
-            </div>
-            <div style={{ fontSize: '32px', padding: '0 20px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
-              ← JSON-RPC →
-            </div>
-            <div style={{
-              background: 'var(--accent)',
-              color: '#0f172a',
-              padding: '18px 28px',
-              borderRadius: '14px',
-              fontSize: '26px',
-              fontWeight: 700,
-              textAlign: 'center',
-            }}>
-              Language Server<br/>
-              <span style={{ fontSize: '24px', opacity: 0.8 }}>（Server）</span>
-            </div>
-          </div>
-          <p style={{ marginTop: '16px', textAlign: 'center' }}>
-            2016 年由 Microsoft 提出，將語言智能功能<span className="highlight">標準化</span>為開放協定
-          </p>
-        </div>
-      </div>
-
-      {/* Step 2: 核心能力 4 張卡片 */}
-      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
-        <h3 style={{ marginTop: '24px', marginBottom: '16px' }}>
-          <span className="highlight-pink">核心能力</span>
-        </h3>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          {[
-            { icon: '🔴', title: 'Diagnostics', desc: '即時錯誤與警告提示', cls: 'highlight' },
-            { icon: '🧭', title: 'Navigation', desc: 'Go to Definition / Find References', cls: 'highlight-green' },
-            { icon: '🧠', title: 'Intelligence', desc: 'Auto Completion / Hover 型別資訊', cls: 'highlight-yellow' },
-            { icon: '🔧', title: 'Refactoring', desc: 'Rename / Code Actions 重構操作', cls: 'highlight-pink' },
-          ].map((item, i) => (
-            <div key={i} className="card" style={{ flex: '1 1 220px', minWidth: '200px', textAlign: 'center' }}>
-              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{item.icon}</p>
-              <p style={{ fontSize: '28px', fontWeight: 700, marginBottom: '6px' }}>
-                <span className={item.cls}>{item.title}</span>
-              </p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Step 3: Claude Code × LSP 整合 */}
-      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
-        <h3 style={{ marginTop: '24px', marginBottom: '8px' }}>
-          <span style={{
-            background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>Claude Code × LSP</span>
-        </h3>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '26px', marginBottom: '16px' }}>
-          透過 Plugin 系統整合 LSP，提供 5 個語義操作工具
-        </p>
-        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-          {lspTools.map((tool, i) => (
-            <div key={i} className="card" style={{ flex: '1 1 180px', minWidth: '170px', textAlign: 'center', padding: '20px 16px' }}>
-              <p style={{ fontSize: '36px', marginBottom: '6px' }}>{tool.icon}</p>
-              <p style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'var(--font-mono)', marginBottom: '6px', color: 'var(--accent)' }}>
-                {tool.name}
-              </p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{tool.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Step 4: 效能對比 + 支援語言 */}
-      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
-        <h3 style={{ marginTop: '24px', marginBottom: '16px' }}>
-          <span className="highlight-green">效能對比</span>
+          <span className="highlight-green">衝擊 — 900× 效能提升</span>
         </h3>
         <div className="card" style={{ padding: '24px 32px' }}>
-          <p style={{ fontSize: '26px', marginBottom: '16px', fontWeight: 700 }}>
-            找出函式所有呼叫點的速度：
-          </p>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '32px', height: '120px', marginBottom: '8px' }}>
-            {/* 文字搜尋 bar */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-              <span style={{ fontSize: '28px', fontWeight: 900, color: 'var(--danger)', marginBottom: '8px' }}>~45 秒</span>
-              <div style={{
-                width: '100%',
-                height: '80px',
-                background: 'var(--danger)',
-                borderRadius: '10px 10px 0 0',
-                opacity: 0.85,
-              }}></div>
-              <span style={{ fontSize: '24px', marginTop: '8px', color: 'var(--text-secondary)' }}>文字搜尋 (grep)</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--danger)', minWidth: '120px' }}>grep ~45s</span>
+                <div style={{
+                  flex: 1,
+                  height: '36px',
+                  background: 'var(--danger)',
+                  borderRadius: '8px',
+                  opacity: 0.85,
+                }}></div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent3)', minWidth: '120px' }}>LSP ~50ms</span>
+                <div style={{
+                  width: '4px',
+                  height: '36px',
+                  background: 'var(--accent3)',
+                  borderRadius: '8px',
+                  boxShadow: '0 0 20px var(--accent3)',
+                }}></div>
+              </div>
             </div>
-            {/* LSP bar */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-              <span style={{ fontSize: '28px', fontWeight: 900, color: 'var(--accent3)', marginBottom: '8px' }}>~50 ms</span>
-              <div style={{
-                width: '100%',
-                height: '4px',
-                background: 'var(--accent3)',
-                borderRadius: '10px 10px 0 0',
-                boxShadow: '0 0 20px var(--accent3)',
-              }}></div>
-              <span style={{ fontSize: '24px', marginTop: '8px', color: 'var(--text-secondary)' }}>LSP findReferences</span>
-            </div>
+            <div style={{
+              fontSize: '48px',
+              fontWeight: 900,
+              color: 'var(--accent3)',
+              textShadow: '0 0 30px rgba(52, 211, 153, 0.4)',
+            }}>900×</div>
           </div>
-          <p style={{ textAlign: 'center', fontSize: '28px', fontWeight: 700, marginTop: '12px' }}>
-            <span className="highlight-green">900× 加速</span>
-            <span style={{ color: 'var(--text-dim)', fontSize: '24px' }}> — 從近一分鐘到瞬間完成</span>
-          </p>
-        </div>
-
-        {/* 支援語言 */}
-        <p style={{ fontSize: '26px', fontWeight: 700, marginTop: '20px', marginBottom: '12px' }}>
-          支援 <span className="highlight">11 種語言</span>：
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-          {languages.map((lang, i) => (
-            <div key={i} style={{
-              background: lang.color,
-              color: '#fff',
-              padding: '8px 18px',
-              borderRadius: '10px',
-              fontSize: '24px',
-              fontWeight: 700,
-              textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-            }}>
-              {lang.name}
-            </div>
-          ))}
+          <div style={{
+            background: 'rgba(52, 211, 153, 0.1)',
+            border: '1px solid rgba(52, 211, 153, 0.3)',
+            borderRadius: '12px',
+            padding: '16px 20px',
+          }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: 'var(--accent3)', marginBottom: '8px' }}>
+              LSP 不只快，還精準
+            </p>
+            <p style={{ fontSize: '24px', color: 'var(--text-secondary)' }}>
+              grep 回傳 <span className="highlight">47+ 結果</span>（含註解、測試、文件），Claude 需逐一判讀
+            </p>
+            <p style={{ fontSize: '24px', color: 'var(--text-secondary)' }}>
+              LSP 回傳 <span className="highlight-green">1 個精確位置</span>，零雜訊
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Step 5: 啟用方式 */}
-      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+      {/* Step 2: 完整工作流程 */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
         <h3 style={{ marginTop: '24px', marginBottom: '16px' }}>
-          <span className="highlight-yellow">啟用方式</span>
+          <span className="highlight">實戰 — 完整工作流程</span>
+        </h3>
+        <div className="card" style={{
+          padding: '20px 24px',
+          background: '#1a1a2e',
+          fontFamily: 'var(--font-mono)',
+        }}>
+          {workflowSteps.map((s, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              gap: '12px',
+              padding: '8px 0',
+              borderBottom: i < workflowSteps.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              fontSize: '24px',
+            }}>
+              <span style={{ color: 'var(--text-dim)', minWidth: '100px', fontWeight: 700 }}>{s.role}</span>
+              <span style={{ color: s.color }}>{s.text}</span>
+            </div>
+          ))}
+        </div>
+        <div className="card card-accent" style={{ marginTop: '16px' }}>
+          <p style={{ fontSize: '26px' }}>
+            <span className="highlight-yellow">diagnostics 是自動觸發的</span> — Claude 每次編輯後，語言伺服器立即掃描回報錯誤
+          </p>
+        </div>
+      </div>
+
+      {/* Step 3: 9 大操作 × 11+ 種語言 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '24px', marginBottom: '16px' }}>
+          <span className="highlight-pink">工具 — 9 大操作 × 11+ 種語言</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '24px' }}>
+          {/* 左側：操作清單 */}
+          <div style={{ flex: 1 }}>
+            {/* 自動 */}
+            <p style={{ fontSize: '24px', color: 'var(--text-dim)', marginBottom: '8px', fontWeight: 700 }}>🔄 自動觸發</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '24px',
+                fontWeight: 700,
+                background: 'rgba(251, 191, 36, 0.15)',
+                border: '1px solid var(--accent4)',
+                color: 'var(--accent4)',
+                padding: '6px 14px',
+                borderRadius: '8px',
+              }}>diagnostics</span>
+              <span style={{
+                fontSize: '22px',
+                background: 'var(--accent4)',
+                color: '#0f172a',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontWeight: 700,
+              }}>自動觸發</span>
+            </div>
+
+            {/* 手動核心 */}
+            <p style={{ fontSize: '24px', color: 'var(--text-dim)', marginBottom: '8px', fontWeight: 700 }}>🖱️ 手動核心</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+              {['goToDefinition', 'findReferences', 'hover', 'documentSymbol', 'workspaceSymbol', 'goToImplementation'].map((name, i) => (
+                <span key={i} style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  background: 'rgba(56, 189, 248, 0.1)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  color: 'var(--accent)',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                }}>{name}</span>
+              ))}
+            </div>
+
+            {/* Call Hierarchy */}
+            <p style={{ fontSize: '24px', color: 'var(--text-dim)', marginBottom: '8px', fontWeight: 700 }}>📞 Call Hierarchy</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {['prepareCallHierarchy', 'incomingCalls', 'outgoingCalls'].map((name, i) => (
+                <span key={i} style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  background: 'rgba(244, 114, 182, 0.1)',
+                  border: '1px solid rgba(244, 114, 182, 0.3)',
+                  color: 'var(--accent2)',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                }}>{name}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* 右側：支援語言 */}
+          <div style={{ flex: '0 0 280px' }}>
+            <p style={{ fontSize: '24px', color: 'var(--text-dim)', marginBottom: '12px', fontWeight: 700 }}>支援語言</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {languages.map((lang, i) => (
+                <div key={i} style={{
+                  background: lang.color,
+                  color: '#fff',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                }}>
+                  {lang.name}
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: '22px', color: 'var(--text-dim)', marginTop: '12px' }}>
+              v2.0.74 (2025.12) 新增
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 4: 啟用方式 */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '24px', marginBottom: '16px' }}>
+          <span className="highlight-yellow">啟用 — 設定 + 安裝</span>
         </h3>
         <div className="flow-container">
           <div className="flow-box" style={{ background: 'var(--accent4)', color: '#0f172a' }}>
-            <div style={{ fontSize: '24px' }}>Step 1</div>
-            <code style={{ fontSize: '24px', background: 'rgba(0,0,0,0.2)', color: '#0f172a' }}>ENABLE_LSP_TOOL=1</code>
+            <div style={{ fontSize: '24px', fontWeight: 700 }}>Step 1 — 設定</div>
+            <div style={{
+              background: '#1a1a2e',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginTop: '8px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '22px',
+              color: 'var(--text-primary)',
+              textAlign: 'left',
+            }}>
+              <p style={{ color: 'var(--text-dim)' }}>settings.json</p>
+              <p>{'{ "env": { "ENABLE_LSP_TOOL": "1" } }'}</p>
+            </div>
           </div>
           <span className="flow-arrow" style={{ opacity: 1, transform: 'none' }}>→</span>
           <div className="flow-box" style={{ background: 'var(--accent)', color: '#0f172a' }}>
-            <div style={{ fontSize: '24px' }}>Step 2</div>
-            <code style={{ fontSize: '24px', background: 'rgba(0,0,0,0.2)', color: '#0f172a' }}>/plugin marketplace add</code>
+            <div style={{ fontSize: '24px', fontWeight: 700 }}>Step 2 — 安裝 Plugin</div>
+            <div style={{
+              background: '#1a1a2e',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginTop: '8px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '22px',
+              color: 'var(--text-primary)',
+              textAlign: 'left',
+            }}>
+              <p>/plugin marketplace</p>
+              <p style={{ color: 'var(--text-dim)' }}>搜尋 LSP → 安裝</p>
+            </div>
           </div>
-          <span className="flow-arrow" style={{ opacity: 1, transform: 'none' }}>→</span>
-          <div className="flow-box" style={{ background: 'var(--accent3)', color: '#0f172a' }}>
-            <div style={{ fontSize: '24px' }}>Step 3</div>
-            <code style={{ fontSize: '24px', background: 'rgba(0,0,0,0.2)', color: '#0f172a' }}>/plugin install</code>
-          </div>
+        </div>
+        <div className="card card-accent" style={{ marginTop: '16px' }}>
+          <p style={{ fontSize: '24px', color: 'var(--text-secondary)' }}>
+            首次使用時自動下載對應語言伺服器，之後每次開啟專案自動啟動
+          </p>
         </div>
       </div>
 
-      {/* Step 6: 展示影片 */}
-      <div className={`step-fade ${step >= 6 ? 'visible' : 'pending'}`}>
+      {/* Step 5: 展示影片 */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
         <h3 style={{ marginTop: '24px', marginBottom: '16px' }}>
           <span className="highlight">LSP 示範</span>
         </h3>
@@ -2173,7 +2172,7 @@ const SLIDES = [
   { component: SlideOperations, totalSteps: 5, title: '基本操作與設定' },
   { component: SlidePlugin, totalSteps: 3, title: 'Plugin 生態系' },
   { component: SlideSectionAdvanced, totalSteps: 0, title: '高階功能' },
-  { component: SlideLSP, totalSteps: 6, title: 'Language Server Protocol' },
+  { component: SlideLSP, totalSteps: 5, title: 'Language Server Protocol' },
 ];
 
 /* ==================================================================
