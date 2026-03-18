@@ -1756,6 +1756,441 @@ function SlidePlugin({ step }) {
 }
 
 /* ==================================================================
+   SLIDE: MCP (Model Context Protocol)
+   ================================================================== */
+function SlideMCP({ step }) {
+  const aiApps = [
+    { emoji: '🤖', name: 'Claude Code' },
+    { emoji: '💬', name: 'ChatGPT' },
+    { emoji: '🧠', name: 'Cursor' },
+  ];
+
+  const tools = [
+    { emoji: '🗄️', name: 'Database' },
+    { emoji: '📁', name: 'File System' },
+    { emoji: '🌐', name: 'Web API' },
+    { emoji: '💼', name: 'Slack' },
+  ];
+
+  const archLayers = [
+    { name: 'Host', desc: 'AI 應用（Claude Code, Desktop, VS Code）', color: 'var(--accent)' },
+    { name: 'Client', desc: '輕量連接器，1:1 對應 Server', color: 'var(--accent2)' },
+    { name: 'Server', desc: '工具提供者，暴露 Tools / Resources / Prompts', color: 'var(--accent3)' },
+  ];
+
+  const primitives = [
+    { icon: '🔧', name: 'Tools', desc: '可執行函式（API 呼叫、DB 查詢）', color: 'var(--accent)' },
+    { icon: '📂', name: 'Resources', desc: '資料來源（Schema、檔案內容）', color: 'var(--accent2)' },
+    { icon: '💬', name: 'Prompts', desc: '可重複使用的互動模板', color: 'var(--accent4)' },
+  ];
+
+  const transports = [
+    { name: 'Stdio', desc: '本地通訊，零網路開銷' },
+    { name: 'Streamable HTTP', desc: '遠端通訊，支援 OAuth 2.0' },
+  ];
+
+  const scopes = [
+    { name: 'Local', path: '.claude.json', desc: '預設，僅本機' },
+    { name: 'Project', path: '.mcp.json', desc: '團隊共用，進 Git' },
+    { name: 'User', path: '~/.claude/settings.json', desc: '全域，所有專案' },
+  ];
+
+  const ecosystem = [
+    { name: 'GitHub', color: '#8b5cf6' },
+    { name: 'Sentry', color: '#362d59' },
+    { name: 'Slack', color: '#4A154B' },
+    { name: 'PostgreSQL', color: '#336791' },
+    { name: 'Figma', color: '#F24E1E' },
+    { name: 'Notion', color: '#efefef' },
+    { name: 'Jira', color: '#0052CC' },
+    { name: 'Linear', color: '#5E6AD2' },
+    { name: 'Datadog', color: '#632CA6' },
+    { name: 'Browser', color: '#4285F4' },
+  ];
+
+  const toolSearchFlow = [
+    { text: '啟動', bg: 'var(--accent)' },
+    { text: '建立索引 (50t/tool)', bg: 'var(--accent2)' },
+    { text: '分析意圖', bg: 'var(--accent4)' },
+    { text: '選擇載入', bg: 'var(--accent3)' },
+    { text: '快取複用', bg: '#8b5cf6' },
+  ];
+
+  const youtubeBlock = (videoId, label) => (
+    <a
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'block', textDecoration: 'none' }}
+    >
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        background: '#000',
+        cursor: 'pointer',
+      }}>
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={label}
+          style={{
+            position: 'absolute',
+            top: 0, left: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80px', height: '80px',
+          background: 'rgba(255,0,0,0.85)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 0, height: 0,
+            borderTop: '18px solid transparent',
+            borderBottom: '18px solid transparent',
+            borderLeft: '30px solid #fff',
+            marginLeft: '6px',
+          }}></div>
+        </div>
+      </div>
+      <p style={{ textAlign: 'center', marginTop: '12px', color: 'var(--text-secondary)', fontSize: '24px' }}>
+        {label}
+      </p>
+    </a>
+  );
+
+  return (
+    <div className="slide">
+      <h2 className="animate-in">MCP — AI 的萬用插頭</h2>
+      <p className="animate-in delay-1" style={{ color: 'var(--text-secondary)', fontSize: '28px', marginBottom: '24px' }}>
+        Anthropic 於 2024/11 發布的開源協定，標準化 AI 與外部工具的連接
+      </p>
+
+      {/* Step 0: N×M 問題對比 */}
+      <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
+        {/* 左卡：沒有 MCP */}
+        <div className="card" style={{
+          flex: 1,
+          borderLeft: '4px solid var(--danger)',
+          padding: '24px',
+        }}>
+          <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--danger)', marginBottom: '16px' }}>
+            沒有 MCP
+          </p>
+          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', alignItems: 'center' }}>
+            {/* AI 側 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              {aiApps.map((a, i) => (
+                <span key={i} style={{ fontSize: '28px' }}>{a.emoji} {a.name}</span>
+              ))}
+            </div>
+            {/* 混亂連線 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <span key={i} style={{ color: 'var(--danger)', fontSize: '20px', opacity: 0.6 + i * 0.05 }}>───</span>
+              ))}
+              <span style={{ fontSize: '24px', color: 'var(--danger)', fontWeight: 700, marginTop: '4px' }}>12 條</span>
+            </div>
+            {/* 工具側 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              {tools.map((t, i) => (
+                <span key={i} style={{ fontSize: '28px' }}>{t.emoji} {t.name}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 右卡：有 MCP */}
+        <div className="card" style={{
+          flex: 1,
+          borderLeft: '4px solid var(--accent3)',
+          padding: '24px',
+        }}>
+          <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--accent3)', marginBottom: '16px' }}>
+            有 MCP
+          </p>
+          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              {aiApps.map((a, i) => (
+                <span key={i} style={{ fontSize: '28px' }}>{a.emoji} {a.name}</span>
+              ))}
+            </div>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              background: 'rgba(52, 211, 153, 0.15)',
+              border: '2px solid var(--accent3)',
+              borderRadius: '12px',
+              padding: '12px 20px',
+            }}>
+              <span style={{ fontSize: '28px', fontWeight: 900, color: 'var(--accent3)' }}>MCP</span>
+              <span style={{ fontSize: '24px', color: 'var(--accent3)' }}>標準協定</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              {tools.map((t, i) => (
+                <span key={i} style={{ fontSize: '28px' }}>{t.emoji} {t.name}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* USB 比喻 callout */}
+      <div className="card card-accent" style={{ marginBottom: '24px' }}>
+        <p style={{ fontSize: '26px' }}>
+          🔌 就像 <span className="highlight">USB</span> 統一了裝置連接介面 — <span className="highlight-green">MCP</span> 統一了 AI 與外部工具的連接方式
+        </p>
+      </div>
+
+      {/* Step 1: 三層架構 */}
+      <div className={`step-fade ${step >= 1 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginBottom: '16px' }}>
+          <span className="highlight">三層架構 — Host → Client → Server</span>
+        </h3>
+        {/* Flow diagram */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '20px' }}>
+          {archLayers.map((layer, i) => (
+            <React.Fragment key={i}>
+              <div style={{
+                background: layer.color,
+                color: '#0f172a',
+                fontWeight: 900,
+                fontSize: '28px',
+                padding: '16px 32px',
+                borderRadius: '12px',
+                textAlign: 'center',
+              }}>{layer.name}</div>
+              {i < archLayers.length - 1 && (
+                <span style={{ fontSize: '36px', color: 'var(--text-dim)' }}>→</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        {/* 三欄說明卡 */}
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {archLayers.map((layer, i) => (
+            <div key={i} className="card" style={{
+              flex: 1,
+              borderTop: `3px solid ${layer.color}`,
+            }}>
+              <p style={{ fontWeight: 700, fontSize: '28px', color: layer.color, marginBottom: '8px' }}>{layer.name}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{layer.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 2: 三大元件 + 傳輸方式 */}
+      <div className={`step-fade ${step >= 2 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-pink">三大元件 + 傳輸方式</span>
+        </h3>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+          {primitives.map((p, i) => (
+            <div key={i} className="card" style={{
+              flex: 1,
+              borderTop: `3px solid ${p.color}`,
+            }}>
+              <p style={{ fontSize: '36px', marginBottom: '8px' }}>{p.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '28px', color: p.color, marginBottom: '8px' }}>{p.name}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{p.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {transports.map((t, i) => (
+            <div key={i} className="card" style={{
+              flex: 1,
+              padding: '16px 24px',
+              background: 'rgba(56, 189, 248, 0.06)',
+              border: '1px solid rgba(56, 189, 248, 0.15)',
+            }}>
+              <p style={{ fontWeight: 700, fontSize: '26px', color: 'var(--accent)', marginBottom: '4px' }}>{t.name}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{t.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 3: 安裝與設定 */}
+      <div className={`step-fade ${step >= 3 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-green">安裝與設定</span>
+        </h3>
+        <pre style={{
+          background: 'rgba(0,0,0,0.4)',
+          borderRadius: '12px',
+          padding: '20px',
+          fontSize: '22px',
+          fontFamily: 'var(--font-mono)',
+          lineHeight: 1.7,
+          overflowX: 'auto',
+          marginBottom: '16px',
+        }}>{`# 遠端 HTTP server
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# 本地 stdio server
+claude mcp add --transport stdio my-db \\
+  --env DB_URL=postgres://... \\
+  -- npx -y @bytebase/dbhub
+
+# 管理指令
+claude mcp list / remove / /mcp`}</pre>
+        {/* Scope 卡片 */}
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+          {scopes.map((s, i) => (
+            <div key={i} className="card" style={{ flex: 1 }}>
+              <p style={{ fontWeight: 700, fontSize: '28px', color: 'var(--accent)', marginBottom: '4px' }}>{s.name}</p>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '22px', color: 'var(--accent4)', marginBottom: '4px' }}>{s.path}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+        {/* 生態系 badges */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {ecosystem.map((e, i) => (
+            <span key={i} style={{
+              background: e.color,
+              color: e.name === 'Notion' ? '#0f172a' : '#fff',
+              fontWeight: 700,
+              fontSize: '22px',
+              padding: '6px 16px',
+              borderRadius: '20px',
+            }}>{e.name}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 4: 按需載入 — Tool Search */}
+      <div className={`step-fade ${step >= 4 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-yellow">按需載入 — Tool Search</span>
+        </h3>
+        {/* Before / After 對比 */}
+        <div className="card" style={{ padding: '24px 32px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '20px' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--danger)', minWidth: '220px' }}>舊版 ~18,600 tokens</span>
+                <div style={{
+                  flex: 1,
+                  height: '36px',
+                  background: 'var(--danger)',
+                  borderRadius: '8px',
+                  opacity: 0.85,
+                }}></div>
+                <span style={{ fontSize: '22px', color: 'var(--danger)' }}>佔 41%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent3)', minWidth: '220px' }}>新版 ~5,000 tokens</span>
+                <div style={{
+                  width: '27%',
+                  height: '36px',
+                  background: 'var(--accent3)',
+                  borderRadius: '8px',
+                  boxShadow: '0 0 20px var(--accent3)',
+                }}></div>
+                <span style={{ fontSize: '22px', color: 'var(--accent3)' }}>佔 2.5%</span>
+              </div>
+            </div>
+            <div style={{
+              fontSize: '48px',
+              fontWeight: 900,
+              color: 'var(--accent3)',
+              textShadow: '0 0 30px rgba(52, 211, 153, 0.4)',
+            }}>95% ↓</div>
+          </div>
+        </div>
+        {/* Flow diagram */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          {toolSearchFlow.map((f, i) => (
+            <React.Fragment key={i}>
+              <div style={{
+                background: f.bg,
+                color: '#0f172a',
+                fontWeight: 700,
+                fontSize: '24px',
+                padding: '10px 18px',
+                borderRadius: '10px',
+                textAlign: 'center',
+              }}>{f.text}</div>
+              {i < toolSearchFlow.length - 1 && (
+                <span style={{ fontSize: '28px', color: 'var(--text-dim)' }}>→</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="card card-accent">
+          <p style={{ fontSize: '24px' }}>
+            自動啟用 — 當工具描述佔 context 超過 <span className="highlight-yellow">10%</span> 時自動觸發
+          </p>
+        </div>
+      </div>
+
+      {/* Step 5: Deferred Tools 機制 */}
+      <div className={`step-fade ${step >= 5 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight">Deferred Tools 機制</span>
+        </h3>
+        {/* 三狀態 */}
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+          {[
+            { icon: '💤', label: 'Deferred', desc: '尚未載入，等待在索引中', color: '#8b5cf6' },
+            { icon: '⏳', label: 'Loading', desc: '正在載入完整 schema', color: 'var(--accent4)' },
+            { icon: '✅', label: 'Loaded', desc: '完全可用，已快取', color: 'var(--accent3)' },
+          ].map((s, i) => (
+            <div key={i} className="card" style={{
+              flex: 1,
+              borderTop: `3px solid ${s.color}`,
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '40px', marginBottom: '8px' }}>{s.icon}</p>
+              <p style={{ fontWeight: 700, fontSize: '28px', color: s.color, marginBottom: '4px' }}>{s.label}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '24px' }}>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+        <pre style={{
+          background: 'rgba(0,0,0,0.4)',
+          borderRadius: '12px',
+          padding: '20px',
+          fontSize: '22px',
+          fontFamily: 'var(--font-mono)',
+          lineHeight: 1.7,
+          overflowX: 'auto',
+          marginBottom: '16px',
+        }}>{`ENABLE_TOOL_SEARCH=auto       # 預設，10% 門檻自動啟用
+ENABLE_TOOL_SEARCH=auto:5     # 自訂門檻 5%
+toolSearchDeferred: false     # 特定 server 永遠預載`}</pre>
+        <div className="card card-accent">
+          <p style={{ fontSize: '26px' }}>
+            <span className="highlight-green">Claude 會自動判斷何時需要哪些工具</span> — 你不需要做任何事
+          </p>
+        </div>
+      </div>
+
+      {/* Step 6: 示範影片 */}
+      <div className={`step-fade ${step >= 6 ? 'visible' : 'pending'}`}>
+        <h3 style={{ marginTop: '28px', marginBottom: '16px' }}>
+          <span className="highlight-pink">MCP 示範</span>
+        </h3>
+        {youtubeBlock('gY6Op8j0_Fk', '點擊播放 — MCP 示範影片')}
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDE: LSP (Language Server Protocol)
    ================================================================== */
 function SlideLSP({ step }) {
@@ -3053,6 +3488,7 @@ const SLIDES = [
   { component: SlideContextWindow, totalSteps: 5, title: 'Context Window' },
   { component: SlideCLAUDEmd, totalSteps: 5, title: 'CLAUDE.md 專案指引' },
   { component: SlideMemory, totalSteps: 5, title: '記憶系統' },
+  { component: SlideMCP, totalSteps: 6, title: 'MCP 協定' },
 ];
 
 /* ==================================================================
