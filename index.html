@@ -2750,6 +2750,63 @@ Next.js 14 e-commerce platform. Stripe payments + Prisma ORM.
    SlideMemory — 記憶系統
    ================================================================== */
 function SlideMemory({ step }) {
+  const youtubeBlock = (videoId, label) => (
+    <a
+      href={`https://www.youtube.com/watch?v=${videoId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'block', textDecoration: 'none' }}
+    >
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        background: '#000',
+        cursor: 'pointer',
+      }}>
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={label}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(255,0,0,0.85)',
+          borderRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 0,
+            height: 0,
+            borderTop: '18px solid transparent',
+            borderBottom: '18px solid transparent',
+            borderLeft: '30px solid #fff',
+            marginLeft: '6px',
+          }}></div>
+        </div>
+      </div>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '12px', fontSize: '24px' }}>
+        🎬 {label}
+      </p>
+    </a>
+  );
+
   const memoryTypes = [
     { icon: '🟢', label: '# quick command', desc: '在對話中輸入 # always use pnpm', target: '→ 寫入 CLAUDE.md', color: 'var(--accent3)' },
     { icon: '🔵', label: '自然語言', desc: '「Remember, API tests need Redis」', target: '→ 寫入 Auto Memory', color: 'var(--accent)' },
@@ -2970,6 +3027,7 @@ Port 3000 is often occupied, use 3001.`}</pre>
             </p>
           </div>
         </div>
+        {youtubeBlock('GL6vjubUa9M', '點擊播放 — 記憶系統示範')}
       </div>
     </div>
   );
