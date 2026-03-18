@@ -723,6 +723,94 @@
   }
 
   /* ============================================
+     Q&A END SLIDE — SPARKLE PARTICLES
+     ============================================ */
+  @keyframes sparkleFloat {
+    0%   { transform: translateY(0) scale(1); opacity: 0; }
+    10%  { opacity: 1; }
+    50%  { transform: translateY(-40px) scale(1.2); opacity: 0.8; }
+    100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+  }
+  @keyframes starPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+    50%      { transform: scale(1.4) rotate(180deg); opacity: 1; }
+  }
+  @keyframes qaTextGlow {
+    0%, 100% {
+      text-shadow: 0 0 20px rgba(56,189,248,0.6), 0 0 60px rgba(244,114,182,0.3);
+      filter: brightness(1);
+    }
+    50% {
+      text-shadow: 0 0 40px rgba(56,189,248,1), 0 0 80px rgba(244,114,182,0.7), 0 0 120px rgba(52,211,153,0.4);
+      filter: brightness(1.15);
+    }
+  }
+  @keyframes qaSubtitleFade {
+    0%, 100% { opacity: 0.7; }
+    50%      { opacity: 1; }
+  }
+  @keyframes borderRainbow {
+    0%   { border-color: var(--accent); box-shadow: 0 0 30px rgba(56,189,248,0.3); }
+    33%  { border-color: var(--accent2); box-shadow: 0 0 30px rgba(244,114,182,0.3); }
+    66%  { border-color: var(--accent3); box-shadow: 0 0 30px rgba(52,211,153,0.3); }
+    100% { border-color: var(--accent); box-shadow: 0 0 30px rgba(56,189,248,0.3); }
+  }
+
+  .qa-sparkle-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .qa-sparkle {
+    position: absolute;
+    font-size: 24px;
+    animation: sparkleFloat 3s ease-in-out infinite;
+  }
+  .qa-star {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: starPulse 2s ease-in-out infinite;
+  }
+  .qa-main-title {
+    font-size: 120px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 25%, #fff 50%, var(--accent3) 75%, var(--accent) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: slideInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+               shimmer 2.5s linear infinite,
+               qaTextGlow 3s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+  }
+  .qa-subtitle {
+    font-size: 36px;
+    color: var(--text-secondary);
+    margin-top: 16px;
+    animation: slideInUp 0.8s 0.2s ease forwards, qaSubtitleFade 4s 1s ease-in-out infinite;
+    opacity: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .qa-contact-card {
+    margin-top: 48px;
+    padding: 24px 48px;
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    animation: slideInUp 0.8s 0.4s ease forwards, borderRainbow 4s linear infinite;
+    opacity: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
      RESPONSIVE
      ============================================ */
   @media (max-width: 900px) {
@@ -2911,6 +2999,240 @@ function SlideSectionPractical({ step, isActive }) {
 }
 
 /* ==================================================================
+   SLIDE: 工程心法 — Claude Code 開發心法與建議
+   ================================================================== */
+function SlideMindset({ step }) {
+  const principles = [
+    {
+      icon: '🗺️', num: '01', title: '先規劃，再動手',
+      subtitle: 'Plan Mode 是你的超能力',
+      desc: '用 Plan Mode 先對齊方向，確認 AI 理解你的意圖後才開始寫 code。研究與實作分開，避免解決錯誤的問題。',
+      color: 'var(--accent)',
+    },
+    {
+      icon: '🎯', num: '02', title: '精準指令，零即興',
+      subtitle: '長 Prompt 勝過短 Prompt',
+      desc: '把設計決策、限制條件、不該動的範圍全部寫進指令。留給 AI 的即興空間越少，產出越可控。',
+      color: 'var(--accent3)',
+    },
+    {
+      icon: '🧠', num: '03', title: '管好 Context，少即是多',
+      subtitle: 'Context Window 是稀缺資源',
+      desc: '用 /clear 勤清對話、避免裝太多 Plugin。Context 被稀釋，AI 注意力就分散，回答品質直線下降。',
+      color: 'var(--accent2)',
+    },
+    {
+      icon: '🏃', num: '04', title: '小步快跑，頻繁 Commit',
+      subtitle: '一次只做一件事',
+      desc: '每完成一個小功能就 commit，保持 context 乾淨。出問題時能快速定位，回滾成本也最低。',
+      color: 'var(--accent4)',
+    },
+    {
+      icon: '🔄', num: '05', title: '雙重翻譯，驗證理解',
+      subtitle: '不讀 Code 也能把關',
+      desc: '你的想法 → Prompt → AI 產出 Code → 用另一個 AI 解釋 Code → 比對你的原始意圖。兩次翻譯之間的落差就是潛在問題。',
+      color: '#c084fc',
+      hasFlow: true,
+    },
+    {
+      icon: '🛡️', num: '06', title: '永遠審查，量化信任',
+      subtitle: '不審查就接受 = 累積信任債',
+      desc: '每次不看就按 Accept，信任債就複利累積。風險越高的場景，審查就要越嚴格。',
+      color: 'var(--danger)',
+      hasSpectrum: true,
+    },
+  ];
+
+  const flowSteps = ['想法', 'Prompt', 'Code', 'AI 解釋', '你驗證'];
+  const flowColors = ['var(--accent)', 'var(--accent3)', 'var(--accent4)', '#c084fc', 'var(--accent2)'];
+
+  const spectrumLevels = [
+    { label: '自用腳本', color: 'var(--accent3)' },
+    { label: '原型', color: 'var(--accent)' },
+    { label: '團隊工具', color: 'var(--accent4)' },
+    { label: '碰到錢', color: '#c084fc' },
+    { label: '不可逆', color: 'var(--danger)' },
+  ];
+
+  return (
+    <div className="slide">
+      {/* Step 0: Title + metaphor */}
+      <h2 className="animate-in" style={{ fontSize: '48px', fontWeight: 900, marginBottom: '8px' }}>
+        Claude Code <span className="highlight">工程心法</span>
+      </h2>
+      <p className="animate-in delay-1" style={{ fontSize: '28px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+        把 AI 從「過度自信的實習生」變成「可靠的合作夥伴」
+      </p>
+
+      {/* Metaphor card */}
+      <div className="card animate-in delay-2" style={{ display: 'flex', gap: '0', padding: '0', overflow: 'hidden', marginBottom: '28px' }}>
+        <div style={{ flex: 1, padding: '20px 24px', background: 'rgba(248,113,113,0.1)', borderRight: '1px solid var(--bg-card)' }}>
+          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--danger)', marginBottom: '8px' }}>
+            ❌ 過度自信的實習生
+          </div>
+          <p style={{ fontSize: '24px', color: 'var(--text-secondary)', margin: 0 }}>
+            能力強但不問問題、默默假設、出事才發現
+          </p>
+        </div>
+        <div style={{ flex: 1, padding: '20px 24px', background: 'rgba(52,211,153,0.1)' }}>
+          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--accent3)', marginBottom: '8px' }}>
+            ✅ 有紀律的合作夥伴
+          </div>
+          <p style={{ fontSize: '24px', color: 'var(--text-secondary)', margin: 0 }}>
+            有規劃、有約束、有驗證、有回饋迴圈
+          </p>
+        </div>
+      </div>
+
+      {/* Steps 1-6: Principle cards */}
+      {principles.map((p, i) => (
+        <div key={i} className={`step-fade ${step >= i + 1 ? 'visible' : 'pending'}`} style={{ marginBottom: '16px' }}>
+          <div className="card" style={{ borderLeft: `5px solid ${p.color}`, padding: '20px 28px' }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '40px', lineHeight: '1' }}>{p.icon}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                  <span style={{
+                    fontSize: '24px', fontWeight: 900, color: p.color, opacity: 0.5,
+                    fontFamily: 'var(--font-mono)',
+                  }}>{p.num}</span>
+                  <h3 style={{ fontSize: '36px', fontWeight: 700, color: p.color, margin: 0 }}>{p.title}</h3>
+                </div>
+                <p style={{ fontSize: '26px', color: 'var(--text-secondary)', margin: '4px 0 8px', fontWeight: 500 }}>
+                  {p.subtitle}
+                </p>
+                <p style={{ fontSize: '26px', color: 'var(--text-dim)', margin: 0, lineHeight: 1.5 }}>
+                  {p.desc}
+                </p>
+
+                {/* Mini flow chart for principle 5 */}
+                {p.hasFlow && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                    {flowSteps.map((fs, fi) => (
+                      <React.Fragment key={fi}>
+                        <span style={{
+                          display: 'inline-block', padding: '6px 14px', borderRadius: '8px', fontSize: '24px',
+                          fontWeight: 700, background: flowColors[fi], color: '#0f172a',
+                        }}>{fs}</span>
+                        {fi < flowSteps.length - 1 && (
+                          <span style={{ fontSize: '26px', color: 'var(--text-dim)' }}>→</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+
+                {/* Mini rigor spectrum for principle 6 */}
+                {p.hasSpectrum && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '14px', flexWrap: 'wrap' }}>
+                    {spectrumLevels.map((sl, si) => (
+                      <React.Fragment key={si}>
+                        <span style={{
+                          display: 'inline-block', padding: '6px 12px', borderRadius: '8px', fontSize: '22px',
+                          fontWeight: 600, border: `2px solid ${sl.color}`, color: sl.color,
+                        }}>{sl.label}</span>
+                        {si < spectrumLevels.length - 1 && (
+                          <span style={{ fontSize: '24px', color: 'var(--text-dim)' }}>→</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                    <span style={{ fontSize: '24px', color: 'var(--text-secondary)', marginLeft: '8px' }}>
+                      嚴格程度 ▶
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Step 7: Summary banner */}
+      <div className={`step-fade ${step >= 7 ? 'visible' : 'pending'}`} style={{ marginTop: '8px' }}>
+        <div className="card" style={{
+          textAlign: 'center', padding: '28px',
+          background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(244,114,182,0.15))',
+          border: '2px solid var(--accent)',
+        }}>
+          <p style={{ fontSize: '32px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            六個字總結：
+            <span className="highlight"> 規劃</span>、
+            <span className="highlight-green">精準</span>、
+            <span className="highlight-pink">精簡</span>、
+            <span className="highlight-yellow">小步</span>、
+            <span style={{ color: '#c084fc', fontWeight: 700 }}>驗證</span>、
+            <span style={{ color: 'var(--danger)', fontWeight: 700 }}>審查</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==================================================================
+   SLIDE: Q&A 結尾
+   ================================================================== */
+function SlideEnd({ step, isActive }) {
+  const sparkles = ['✨', '💫', '⭐', '🌟', '✨', '💫', '⭐', '🌟', '✨', '💫', '✨', '⭐'];
+  const starColors = ['var(--accent)', 'var(--accent2)', 'var(--accent3)', 'var(--accent4)', '#c084fc'];
+  const [animateKey, setAnimateKey] = useState(0);
+
+  useEffect(() => {
+    if (isActive) setAnimateKey(k => k + 1);
+  }, [isActive]);
+
+  return (
+    <div className="slide title-slide end-slide" key={animateKey}>
+      {/* Sparkle particle field — always animating */}
+      <div className="qa-sparkle-field">
+        {sparkles.map((s, i) => (
+          <span
+            key={i}
+            className="qa-sparkle"
+            style={{
+              left: `${8 + (i * 7.5) % 85}%`,
+              top: `${15 + ((i * 31) % 65)}%`,
+              animationDelay: `${(i * 0.4) % 3}s`,
+              animationDuration: `${2.5 + (i % 3) * 0.8}s`,
+              fontSize: `${20 + (i % 3) * 8}px`,
+            }}
+          >{s}</span>
+        ))}
+        {/* Pulsing dot stars */}
+        {Array.from({ length: 20 }, (_, i) => (
+          <span
+            key={`star-${i}`}
+            className="qa-star"
+            style={{
+              left: `${5 + ((i * 13) % 90)}%`,
+              top: `${5 + ((i * 17) % 90)}%`,
+              background: starColors[i % starColors.length],
+              animationDelay: `${(i * 0.3) % 2}s`,
+              animationDuration: `${1.5 + (i % 4) * 0.5}s`,
+              width: `${4 + (i % 3) * 3}px`,
+              height: `${4 + (i % 3) * 3}px`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Main Q&A text */}
+      {isActive && (
+        <>
+          <h1 className="qa-main-title">Q & A</h1>
+          <p className="qa-subtitle">歡迎提問與討論</p>
+          <div className="qa-contact-card">
+            <p style={{ fontSize: '28px', color: 'var(--text-primary)', margin: 0, fontWeight: 500 }}>
+              謝謝大家 🙏
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ==================================================================
    SLIDE: LSP (Language Server Protocol)
    ================================================================== */
 function SlideLSP({ step }) {
@@ -4212,6 +4534,8 @@ const SLIDES = [
   { component: SlideSkill, totalSteps: 6, title: 'Skills' },
   { component: SlideSubagent, totalSteps: 5, title: 'Subagents' },
   { component: SlideSectionPractical, totalSteps: 0, title: '實戰策略' },
+  { component: SlideMindset, totalSteps: 7, title: '工程心法' },
+  { component: SlideEnd, totalSteps: 0, title: 'Q & A' },
 ];
 
 /* ==================================================================
